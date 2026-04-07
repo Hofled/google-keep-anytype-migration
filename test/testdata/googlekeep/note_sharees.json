@@ -1,0 +1,21 @@
+{
+    "color": "DEFAULT",
+    "isTrashed": false,
+    "isPinned": false,
+    "isArchived": false,
+    "title": "title",
+    "userEditedTimestampUsec": 1773939373691000,
+    "sharees": [
+        {
+            "isOwner": true,
+            "type": "USER",
+            "email": "owner@gmail.com"
+        },
+        {
+            "isOwner": false,
+            "type": "USER",
+            "email": "user@gmail.com"
+        }
+    ],
+    "createdTimestampUsec": 1601831688548000
+}

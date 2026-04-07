@@ -1,0 +1,21 @@
+{
+    "color": "DEFAULT",
+    "isTrashed": false,
+    "isPinned": false,
+    "isArchived": false,
+    "listContent": [
+        {
+            "textHtml": "<p dir=\"ltr\" style=\"line-height:1.38;margin-top:0.0pt;margin-bottom:0.0pt;\"><span style=\"font-size:7.2pt;font-family:'Google Sans';color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">Content 1<\/span><\/p>",
+            "text": "Content 1",
+            "isChecked": false
+        },
+        {
+            "textHtml": "<p dir=\"ltr\" style=\"line-height:1.38;margin-top:0.0pt;margin-bottom:0.0pt;\"><span style=\"font-size:7.2pt;font-family:'Google Sans';color:#000000;background-color:transparent;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;\">Content 2<\/span><\/p>",
+            "text": "Content 2",
+            "isChecked": true
+        }
+    ],
+    "title": "Title",
+    "userEditedTimestampUsec": 1723830917410000,
+    "createdTimestampUsec": 1716639215620000
+}
