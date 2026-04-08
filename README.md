@@ -5,4 +5,6 @@ The migration relies on the data format from using the [Google Takeout](https://
 
 ## Roadmap
 - [ ] Migration using [Anytype API](https://developers.anytype.io/docs/reference/2025-11-08/anytype-api/)
+    - [ ] Only text content + checkbox list formatting
+    - [ ] All text formatting
     - [ ] Include images once the [file uploading API](https://github.com/anyproto/anytype-heart/pull/2843) is supported
