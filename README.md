@@ -7,6 +7,7 @@ The migration relies on the data format from using the [Google Takeout](https://
 - [ ] Migration using [Anytype API](https://developers.anytype.io/docs/reference/2025-11-08/anytype-api/), Google Keep Note ➡️ Anytype Page
     - [ ] Only text content
     - [ ] Checkbox list formatting
+    - [ ] Note annotations ➡️ Anytype Bookmarks
     - [ ] Google Keep Labels ➡️ Anytype Tags
     - [ ] All text formatting
     - [ ] Include images once the [file uploading API](https://github.com/anyproto/anytype-heart/pull/2843) is supported
