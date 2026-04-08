@@ -3,6 +3,9 @@ This tool is used for migrating [Google Keep](https://keep.google.com/) notes to
 
 The migration relies on the data format from using the [Google Takeout](https://takeout.google.com/) export tool.
 
+## Known Limitations
+- The Google Keep exported data does not preserve tickbox (checkbox) indentations, meaning lists appear flat.
+
 ## Roadmap
 - [ ] Migration using [Anytype API](https://developers.anytype.io/docs/reference/2025-11-08/anytype-api/), Google Keep Note ➡️ Anytype Page
     - [ ] Only text content
