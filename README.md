@@ -14,3 +14,4 @@ The migration relies on the data format from using the [Google Takeout](https://
     - [ ] Google Keep Labels ➡️ Anytype Tags
     - [ ] All text formatting
     - [ ] Include images once the [file uploading API](https://github.com/anyproto/anytype-heart/pull/2843) is supported
+- [ ] TUI support
