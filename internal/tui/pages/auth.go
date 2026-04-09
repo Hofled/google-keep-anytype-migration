@@ -81,6 +81,7 @@ func (a *AuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if a.focusedIndex == 2 {
 				return a, a.connect()
 			} else if a.focusedIndex == 3 && a.CanProceed() {
+				a.NextPage()
 				// Proceed to next page (handled by app)
 				return a, nil
 			}
