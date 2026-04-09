@@ -4,19 +4,19 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync"
 
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 )
 
 var disabledTextStyle = lipgloss.NewStyle().Strikethrough(true).Faint(true)
 
 type AuthPage struct {
-	initOnce func() tea.Cmd
+	*models.ModelInitOnce
 
 	addrInput    textinput.Model
 	keyInput     textinput.Model
@@ -52,15 +52,9 @@ func NewAuthPage(appAuthState state.AppAuthStater, appViewState state.AppViewSta
 		appViewState: appViewState,
 	}
 
-	authPage.initOnce = sync.OnceValue(func() tea.Cmd {
-		return authPage.Init()
-	})
+	authPage.ModelInitOnce = models.NewModelInitOnce(authPage)
 
 	return authPage
-}
-
-func (a *AuthPage) InitOnce() tea.Cmd {
-	return a.initOnce()
 }
 
 func (a *AuthPage) Init() tea.Cmd {
@@ -113,7 +107,7 @@ func (a *AuthPage) View() tea.View {
 	b.WriteString(fmt.Sprintf("API Address: %s\n", a.addrInput.View()))
 	b.WriteString(fmt.Sprintf("API Key: %s\n\n", a.keyInput.View()))
 
-	connectLabel := "Connect"
+	connectLabel := "Connect" // TODO add spinner during connection
 	if a.focusedIndex == 2 {
 		connectLabel = "[" + connectLabel + "]"
 	}

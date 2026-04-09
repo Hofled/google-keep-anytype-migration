@@ -6,7 +6,7 @@ import tea "charm.land/bubbletea/v2"
 // It embeds tea.Model and adds methods for navigation.
 type Page interface {
 	tea.Model
-	ModelOnceIniter
+	ModelInitOncer
 	// CanProceed returns true if the page allows proceeding to the next page.
 	CanProceed() bool
 	// GetData returns the data collected by this page.
