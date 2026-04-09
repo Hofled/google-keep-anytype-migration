@@ -16,7 +16,7 @@ func main() {
 
 	authPage := pages.NewAuthPage(appState, viewState) // TODO refactor to lazy page construction
 
-	viewState.AddPage(authPage)
+	viewState.AddPages(authPage)
 
 	tuiApp := app.NewApp(appState, viewState)
 

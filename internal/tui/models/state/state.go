@@ -18,15 +18,15 @@ type AppViewStater interface {
 	PrevView()
 	CurrentView() models.Page
 	CurrentViewIndex() int
-	AddPage(page models.Page)
+	AddPages(pages ...models.Page)
 }
 
 func (avs *AppViewState) HasViews() bool {
 	return len(avs.pages) > 0
 }
 
-func (avs *AppViewState) AddPage(page models.Page) {
-	avs.pages = append(avs.pages, page)
+func (avs *AppViewState) AddPages(pages ...models.Page) {
+	avs.pages = append(avs.pages, pages...)
 }
 
 func (avs *AppViewState) NextView() {
