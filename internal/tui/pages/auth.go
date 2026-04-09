@@ -13,6 +13,8 @@ import (
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 )
 
+var disabledTextStyle = lipgloss.NewStyle().Strikethrough(true).Faint(true)
+
 type AuthPage struct {
 	initOnce func() tea.Cmd
 
@@ -119,7 +121,7 @@ func (a *AuthPage) View() tea.View {
 
 	nextLabel := "Next"
 	if !a.CanProceed() {
-		nextLabel = "(N̶e̶x̶t̶)"
+		nextLabel = disabledTextStyle.Render("(Next)")
 	} else if a.focusedIndex == 3 {
 		nextLabel = "[" + nextLabel + "]"
 	}
