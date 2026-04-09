@@ -121,7 +121,7 @@ func (a *AuthPage) CanProceed() bool {
 	return a.connected
 }
 
-func (a *AuthPage) GetData() interface{} {
+func (a *AuthPage) GetData() any {
 	return map[string]string{
 		"addr": a.addrInput.Value(),
 		"key":  a.keyInput.Value(),
