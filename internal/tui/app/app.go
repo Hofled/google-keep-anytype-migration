@@ -1,8 +1,8 @@
 package app
 
 import (
+	tea "charm.land/bubbletea/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 // App manages the overall TUI application state and page navigation.
@@ -34,18 +34,8 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case "ctrl+c":
 			return a, tea.Quit
-		case "right", "l":
-			if a.current < len(a.pages)-1 && a.pages[a.current].CanProceed() {
-				a.current++
-				return a, a.pages[a.current].Init()
-			}
-		case "left", "h":
-			if a.current > 0 {
-				a.current--
-				return a, a.pages[a.current].Init()
-			}
 		}
 	}
 
@@ -56,9 +46,9 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // View renders the current page.
-func (a *App) View() string {
+func (a *App) View() tea.View {
 	if len(a.pages) == 0 {
-		return "No pages available"
+		return tea.NewView("No pages available")
 	}
 	return a.pages[a.current].View()
 }

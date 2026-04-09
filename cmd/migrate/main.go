@@ -7,7 +7,7 @@ import (
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/app"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages"
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 func main() {

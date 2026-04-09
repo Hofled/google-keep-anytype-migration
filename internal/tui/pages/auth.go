@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 type AuthPage struct {
@@ -29,11 +29,11 @@ func NewAuthPage() *AuthPage {
 	addrInput.SetValue("https://localhost:31009")
 	addrInput.Placeholder = "https://localhost:31009"
 	addrInput.Focus()
-	addrInput.Width = 50
+	addrInput.SetWidth(50)
 
 	keyInput := textinput.New()
 	keyInput.Placeholder = "Your API Key"
-	keyInput.Width = 50
+	keyInput.SetWidth(50)
 
 	return &AuthPage{
 		addrInput:    addrInput,
@@ -50,7 +50,7 @@ func (a *AuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "tab", "shift+tab", "up", "down":
 			a.handleNavigation(msg.String())
@@ -84,7 +84,7 @@ func (a *AuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return a, cmd
 }
 
-func (a *AuthPage) View() string {
+func (a *AuthPage) View() tea.View {
 	var b strings.Builder
 
 	b.WriteString("Authentication\n\n")
@@ -114,7 +114,7 @@ func (a *AuthPage) View() string {
 		b.WriteString("✓ Connected successfully!\n")
 	}
 
-	return b.String()
+	return tea.NewView(b.String())
 }
 
 func (a *AuthPage) CanProceed() bool {
