@@ -4,13 +4,17 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
+	"sync/atomic"
 
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype"
+
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
+	"github.com/epheo/anytype-go"
+	_ "github.com/epheo/anytype-go/client"
 )
 
 var disabledTextStyle = lipgloss.NewStyle().Strikethrough(true).Faint(true)
@@ -21,8 +25,10 @@ type AuthPage struct {
 	addrInput    textinput.Model
 	keyInput     textinput.Model
 	errorMsg     string
-	connected    bool
+	connected    atomic.Bool
 	focusedIndex int
+
+	setClientOnce sync.Once
 
 	appAuthState state.AppAuthStater
 	appViewState state.AppViewStater
@@ -35,8 +41,8 @@ type authResultMsg struct {
 
 func NewAuthPage(appAuthState state.AppAuthStater, appViewState state.AppViewStater) *AuthPage {
 	addrInput := textinput.New()
-	addrInput.SetValue("https://localhost:31009")
-	addrInput.Placeholder = "https://localhost:31009"
+	addrInput.SetValue("http://localhost:31009")
+	addrInput.Placeholder = "http://localhost:31009"
 	addrInput.Focus()
 	addrInput.SetWidth(50)
 
@@ -45,11 +51,12 @@ func NewAuthPage(appAuthState state.AppAuthStater, appViewState state.AppViewSta
 	keyInput.SetWidth(50)
 
 	authPage := &AuthPage{
-		addrInput:    addrInput,
-		keyInput:     keyInput,
-		focusedIndex: 0,
-		appAuthState: appAuthState,
-		appViewState: appViewState,
+		addrInput:     addrInput,
+		keyInput:      keyInput,
+		focusedIndex:  0,
+		appAuthState:  appAuthState,
+		appViewState:  appViewState,
+		setClientOnce: sync.Once{},
 	}
 
 	authPage.ModelInitOnce = models.NewModelInitOnce(authPage)
@@ -80,7 +87,6 @@ func (a *AuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case authResultMsg:
 		if msg.success {
-			a.connected = true
 			a.errorMsg = ""
 		} else {
 			a.errorMsg = msg.err.Error()
@@ -108,6 +114,9 @@ func (a *AuthPage) View() tea.View {
 	b.WriteString(fmt.Sprintf("API Key: %s\n\n", a.keyInput.View()))
 
 	connectLabel := "Connect" // TODO add spinner during connection
+	if a.connected.Load() {
+		connectLabel = disabledTextStyle.Render(connectLabel)
+	}
 	if a.focusedIndex == 2 {
 		connectLabel = "[" + connectLabel + "]"
 	}
@@ -115,8 +124,9 @@ func (a *AuthPage) View() tea.View {
 
 	nextLabel := "Next"
 	if !a.CanProceed() {
-		nextLabel = disabledTextStyle.Render("(Next)")
-	} else if a.focusedIndex == 3 {
+		nextLabel = disabledTextStyle.Render(nextLabel)
+	}
+	if a.focusedIndex == 3 {
 		nextLabel = "[" + nextLabel + "]"
 	}
 	b.WriteString(fmt.Sprintf("%s\n\n", nextLabel))
@@ -125,7 +135,7 @@ func (a *AuthPage) View() tea.View {
 		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("9")).Render("❌ Error: "+a.errorMsg) + "\n")
 	}
 
-	if a.connected {
+	if a.connected.Load() {
 		b.WriteString("✓ Connected successfully!\n")
 	}
 
@@ -133,7 +143,7 @@ func (a *AuthPage) View() tea.View {
 }
 
 func (a *AuthPage) CanProceed() bool {
-	return a.connected
+	return a.connected.Load()
 }
 
 func (a *AuthPage) GetData() any {
@@ -176,14 +186,24 @@ func (a *AuthPage) handleNavigation(key string) {
 }
 
 func (a *AuthPage) connect() tea.Cmd {
+	if a.connected.Load() {
+		return nil
+	}
+
 	return tea.Cmd(func() tea.Msg {
-		ctx := context.Background()
-		authenticatedClient, err := anytype.AuthWithChallenge(ctx, a.addrInput.Value(), a.keyInput.Value())
-		if err != nil {
-			return authResultMsg{success: false, err: err}
+		authenticatedClient := anytype.NewClient(anytype.WithBaseURL(a.addrInput.Value()), anytype.WithAppKey(a.keyInput.Value()))
+		if authenticatedClient == nil {
+			return authResultMsg{success: false, err: fmt.Errorf("failed creating client")}
 		}
 
-		a.appAuthState.SetClient(authenticatedClient)
+		if _, err := authenticatedClient.Spaces().List(context.Background()); err != nil {
+			return authResultMsg{success: false, err: fmt.Errorf("invalid API key: %w", err)}
+		}
+
+		a.setClientOnce.Do(func() {
+			a.connected.Store(true)
+			a.appAuthState.SetClient(authenticatedClient)
+		})
 
 		return authResultMsg{success: true, err: nil}
 	})
