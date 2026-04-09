@@ -4,23 +4,22 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/app"
-	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
-	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages"
 	tea "charm.land/bubbletea/v2"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/app"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages"
 )
 
 func main() {
-	// Initialize app state
-	state := &models.AppState{}
+	appState := &state.AppState{}
+	viewState := &state.AppViewState{}
 
-	// Create pages
-	authPage := pages.NewAuthPage()
+	authPage := pages.NewAuthPage(appState, viewState) // TODO refactor to lazy page construction
 
-	// Create app with pages
-	tuiApp := app.NewApp([]models.Page{authPage}, state)
+	viewState.AddPage(authPage)
 
-	// Run the TUI
+	tuiApp := app.NewApp(appState, viewState)
+
 	p := tea.NewProgram(tuiApp)
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error running TUI: %v\n", err)

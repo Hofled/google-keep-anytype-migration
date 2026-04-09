@@ -4,19 +4,26 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 )
 
 type AuthPage struct {
+	initOnce func() tea.Cmd
+
 	addrInput    textinput.Model
 	keyInput     textinput.Model
 	errorMsg     string
 	connected    bool
 	focusedIndex int
+
+	appAuthState state.AppAuthStater
+	appViewState state.AppViewStater
 }
 
 type authResultMsg struct {
@@ -24,7 +31,7 @@ type authResultMsg struct {
 	err     error
 }
 
-func NewAuthPage() *AuthPage {
+func NewAuthPage(appAuthState state.AppAuthStater, appViewState state.AppViewStater) *AuthPage {
 	addrInput := textinput.New()
 	addrInput.SetValue("https://localhost:31009")
 	addrInput.Placeholder = "https://localhost:31009"
@@ -35,11 +42,23 @@ func NewAuthPage() *AuthPage {
 	keyInput.Placeholder = "Your API Key"
 	keyInput.SetWidth(50)
 
-	return &AuthPage{
+	authPage := &AuthPage{
 		addrInput:    addrInput,
 		keyInput:     keyInput,
 		focusedIndex: 0,
+		appAuthState: appAuthState,
+		appViewState: appViewState,
 	}
+
+	authPage.initOnce = sync.OnceValue(func() tea.Cmd {
+		return authPage.Init()
+	})
+
+	return authPage
+}
+
+func (a *AuthPage) InitOnce() tea.Cmd {
+	return a.initOnce()
 }
 
 func (a *AuthPage) Init() tea.Cmd {
@@ -100,14 +119,14 @@ func (a *AuthPage) View() tea.View {
 
 	nextLabel := "Next"
 	if !a.CanProceed() {
-		nextLabel = "(Next)"
+		nextLabel = "(N̶e̶x̶t̶)"
 	} else if a.focusedIndex == 3 {
 		nextLabel = "[" + nextLabel + "]"
 	}
 	b.WriteString(fmt.Sprintf("%s\n\n", nextLabel))
 
 	if a.errorMsg != "" {
-		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("9")).Render("Error: "+a.errorMsg) + "\n")
+		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("9")).Render("❌ Error: "+a.errorMsg) + "\n")
 	}
 
 	if a.connected {
@@ -126,6 +145,14 @@ func (a *AuthPage) GetData() any {
 		"addr": a.addrInput.Value(),
 		"key":  a.keyInput.Value(),
 	}
+}
+
+func (a *AuthPage) NextPage() {
+	a.appViewState.NextView()
+}
+
+func (a *AuthPage) PrevPage() {
+	a.appViewState.PrevView()
 }
 
 func (a *AuthPage) handleNavigation(key string) {
@@ -155,10 +182,13 @@ func (a *AuthPage) handleNavigation(key string) {
 func (a *AuthPage) connect() tea.Cmd {
 	return tea.Cmd(func() tea.Msg {
 		ctx := context.Background()
-		_, err := anytype.AuthWithChallenge(ctx, a.addrInput.Value(), a.keyInput.Value())
+		authenticatedClient, err := anytype.AuthWithChallenge(ctx, a.addrInput.Value(), a.keyInput.Value())
 		if err != nil {
 			return authResultMsg{success: false, err: err}
 		}
+
+		a.appAuthState.SetClient(authenticatedClient)
+
 		return authResultMsg{success: true, err: nil}
 	})
 }

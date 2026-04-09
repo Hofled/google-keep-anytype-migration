@@ -3,32 +3,31 @@ package app
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 )
 
 var appStyle = lipgloss.NewStyle().Margin(1, 1, 1, 1)
 
 // App manages the overall TUI application state and page navigation.
 type App struct {
-	pages   []models.Page
-	current int
-	state   *models.AppState
+	state     *state.AppState
+	viewState *state.AppViewState
 }
 
 // NewApp creates a new TUI application with the given pages.
-func NewApp(pages []models.Page, state *models.AppState) *App {
+func NewApp(state *state.AppState, viewState *state.AppViewState) *App {
 	return &App{
-		pages:   pages,
-		current: 0,
-		state:   state,
+		state:     state,
+		viewState: viewState,
 	}
 }
 
 // Init initializes the application.
 func (a *App) Init() tea.Cmd {
-	if len(a.pages) > 0 {
-		return a.pages[0].Init()
+	if currView := a.viewState.CurrentView(); currView != nil {
+		return currView.InitOnce()
 	}
+
 	return nil
 }
 
@@ -43,17 +42,16 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	// Update the current page
-	model, cmd := a.pages[a.current].Update(msg)
-	a.pages[a.current] = model.(models.Page)
+	_, cmd := a.viewState.CurrentView().Update(msg)
 	return a, cmd
 }
 
 // View renders the current page.
 func (a *App) View() tea.View {
-	if len(a.pages) == 0 {
-		return tea.NewView("No pages available")
+	if !a.viewState.HasViews() {
+		return tea.NewView("⛔ No pages available ⛔")
 	}
 
-	pageView := a.pages[a.current].View()
+	pageView := a.viewState.CurrentView().View()
 	return tea.NewView(appStyle.Render(pageView.Content))
 }
