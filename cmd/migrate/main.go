@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -13,20 +12,29 @@ import (
 
 func main() {
 	appState := &state.AppState{}
-	viewState := &state.AppPageState{}
+	pageState := state.NewAppPageState()
 
-	authPage, err := auth.NewAuthPage(appState, viewState, nil, nil) // TODO refactor to lazy page construction
+	apiKeyAuthPage, err := auth.NewApiKeyAuthPage(appState, pageState) // TODO refactor to lazy page construction
 	if err != nil {
 		log.Panicln(err)
 	}
 
-	viewState.AddPages(authPage)
+	authMethodPage, err := auth.NewMethodPage(pageState, apiKeyAuthPage.ID())
+	if err != nil {
+		log.Panicln(err)
+	}
 
-	tuiApp := app.NewApp(appState, viewState)
+	apiKeyAuthPage.SetPrevPage(authMethodPage.ID())
+
+	pageState.AddPages(authMethodPage, apiKeyAuthPage)
+
+	pageState.ShowPage(authMethodPage.ID())
+
+	tuiApp := app.NewApp(appState, pageState)
 
 	p := tea.NewProgram(tuiApp)
 	if _, err := p.Run(); err != nil {
-		fmt.Printf("Error running TUI: %v\n", err)
+		log.Printf("Error running TUI: %v\n", err)
 		os.Exit(1)
 	}
 }
