@@ -11,20 +11,20 @@ var appStyle = lipgloss.NewStyle().Margin(1, 1, 1, 1)
 // App manages the overall TUI application state and page navigation.
 type App struct {
 	state     *state.AppState
-	viewState *state.AppPageState
+	pageState *state.AppPageState
 }
 
 // NewApp creates a new TUI application with the given pages.
 func NewApp(state *state.AppState, viewState *state.AppPageState) *App {
 	return &App{
 		state:     state,
-		viewState: viewState,
+		pageState: viewState,
 	}
 }
 
 // Init initializes the application.
 func (a *App) Init() tea.Cmd {
-	if currView := a.viewState.CurrentPage(); currView != nil {
+	if currView := a.pageState.CurrentPage(); currView != nil {
 		return currView.InitOnce()
 	}
 
@@ -42,16 +42,20 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	// Update the current page
-	_, cmd := a.viewState.CurrentPage().Update(msg)
+	_, cmd := a.pageState.CurrentPage().Update(msg)
 	return a, cmd
 }
 
 // View renders the current page.
 func (a *App) View() tea.View {
-	if !a.viewState.HasPages() {
+	if !a.pageState.HasPages() {
 		return tea.NewView("⛔ No pages available ⛔")
 	}
 
-	pageView := a.viewState.CurrentPage().View()
-	return tea.NewView(appStyle.Render(pageView.Content))
+	if currentPage := a.pageState.CurrentPage(); currentPage != nil {
+		pageView := currentPage.View()
+		return tea.NewView(appStyle.Render(pageView.Content))
+	}
+
+	return tea.NewView("Current page is empty")
 }
