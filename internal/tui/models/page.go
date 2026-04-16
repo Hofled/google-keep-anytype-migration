@@ -13,8 +13,6 @@ type Page interface {
 	PageIder
 	// CanProceed returns true if the page allows proceeding to the next page.
 	CanProceed() bool
-	// GetData returns the data collected by this page.
-	GetData() any
 }
 
 type PageId uuid.UUID

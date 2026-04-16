@@ -157,13 +157,6 @@ func (a *ApiKeyAuthPage) CanProceed() bool {
 	return a.connected.Load()
 }
 
-func (a *ApiKeyAuthPage) GetData() any {
-	return map[string]string{
-		"addr": a.addrInput.Value(),
-		"key":  a.keyInput.Value(),
-	}
-}
-
 func (a *ApiKeyAuthPage) handleNavigation(key string) {
 	switch key {
 	case "tab":
