@@ -26,10 +26,10 @@ type AppPageStater interface {
 	AddPages(pages ...models.Page)
 }
 
-func NewAppPageState() AppPageStater {
+func NewAppPageState() *AppPageState {
 	return &AppPageState{
 		pages:         make(map[models.PageId]models.Page),
-		currentPageId: models.PageId{},
+		currentPageId: models.PageId(uuid.Nil),
 	}
 }
 
