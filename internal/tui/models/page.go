@@ -11,8 +11,6 @@ type Page interface {
 	tea.Model
 	ModelInitOncer
 	PageIder
-	// CanProceed returns true if the page allows proceeding to the next page.
-	CanProceed() bool
 }
 
 type PageId uuid.UUID
