@@ -43,7 +43,7 @@ type authResultMsg struct {
 	err     error
 }
 
-func NewApiKeyAuthPage(appAuthState state.AppAuthStater, appViewState state.AppPageStater) (*ApiKeyAuthPage, error) {
+func NewApiKeyAuthPage(appAuthState state.AppAuthStater, appPageState state.AppPageStater) (*ApiKeyAuthPage, error) {
 	addrInput := textinput.New()
 	addrInput.SetValue("http://localhost:31009")
 	addrInput.Placeholder = "http://localhost:31009"
@@ -65,7 +65,7 @@ func NewApiKeyAuthPage(appAuthState state.AppAuthStater, appViewState state.AppP
 		keyInput:      keyInput,
 		focusedIndex:  0,
 		appAuthState:  appAuthState,
-		appPageState:  appViewState,
+		appPageState:  appPageState,
 		setClientOnce: sync.Once{},
 	}
 
