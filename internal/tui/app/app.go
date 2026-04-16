@@ -2,11 +2,8 @@ package app
 
 import (
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 )
-
-var appStyle = lipgloss.NewStyle().Margin(1, 1, 1, 1)
 
 // App manages the overall TUI application state and page navigation.
 type App struct {
@@ -54,7 +51,7 @@ func (a *App) View() tea.View {
 
 	if currentPage := a.pageState.CurrentPage(); currentPage != nil {
 		pageView := currentPage.View()
-		return tea.NewView(appStyle.Render(pageView.Content))
+		return tea.NewView(pageView.Content)
 	}
 
 	return tea.NewView("Current page is empty")
