@@ -107,7 +107,6 @@ func (a *ApiKeyAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, nil
 	}
 
-	// Update inputs
 	switch a.focusedIndex {
 	case 0:
 		a.addrInput, cmd = a.addrInput.Update(msg)
@@ -179,7 +178,6 @@ func (a *ApiKeyAuthPage) handleNavigation(key string) {
 		a.focusedIndex = (a.focusedIndex + 1) % 5
 	}
 
-	// Update focus
 	a.addrInput.Blur()
 	a.keyInput.Blur()
 
