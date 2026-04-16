@@ -35,7 +35,7 @@ type ApiKeyAuthPage struct {
 	setClientOnce sync.Once
 
 	appAuthState state.AppAuthStater
-	appViewState state.AppPageStater
+	appPageState state.AppPageStater
 }
 
 type authResultMsg struct {
@@ -65,7 +65,7 @@ func NewApiKeyAuthPage(appAuthState state.AppAuthStater, appViewState state.AppP
 		keyInput:      keyInput,
 		focusedIndex:  0,
 		appAuthState:  appAuthState,
-		appViewState:  appViewState,
+		appPageState:  appViewState,
 		setClientOnce: sync.Once{},
 	}
 
@@ -91,8 +91,10 @@ func (a *ApiKeyAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if a.focusedIndex == 2 {
 				return a, a.connect()
 			} else if a.focusedIndex == 3 && a.CanProceed() {
-				a.appViewState.NextPage()
-				// Proceed to next page (handled by app)
+				a.appPageState.NextPage()
+				return a, nil
+			} else if a.focusedIndex == 4 {
+				a.appPageState.PrevPage()
 				return a, nil
 			}
 		}
@@ -140,7 +142,15 @@ func (a *ApiKeyAuthPage) View() tea.View {
 	if a.focusedIndex == 3 {
 		nextLabel = "[" + nextLabel + "]"
 	}
-	b.WriteString(fmt.Sprintf("%s\n\n", nextLabel))
+	b.WriteString(fmt.Sprintf("%s\n", nextLabel))
+
+	prevLabel := "Prev"
+	if a.focusedIndex == 4 {
+		prevLabel = "[" + prevLabel + "]"
+	}
+	b.WriteString(fmt.Sprintf("%s\n", prevLabel))
+
+	b.WriteString("\n")
 
 	if a.errorMsg != "" {
 		b.WriteString(authErrStyle.Render("❌ Error: "+a.errorMsg) + "\n")
@@ -160,13 +170,13 @@ func (a *ApiKeyAuthPage) CanProceed() bool {
 func (a *ApiKeyAuthPage) handleNavigation(key string) {
 	switch key {
 	case "tab":
-		a.focusedIndex = (a.focusedIndex + 1) % 4
+		a.focusedIndex = (a.focusedIndex + 1) % 5
 	case "shift+tab":
-		a.focusedIndex = (a.focusedIndex - 1 + 4) % 4
+		a.focusedIndex = (a.focusedIndex - 1 + 5) % 5
 	case "up":
-		a.focusedIndex = (a.focusedIndex - 1 + 4) % 4
+		a.focusedIndex = (a.focusedIndex - 1 + 5) % 5
 	case "down":
-		a.focusedIndex = (a.focusedIndex + 1) % 4
+		a.focusedIndex = (a.focusedIndex + 1) % 5
 	}
 
 	// Update focus
