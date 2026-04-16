@@ -17,7 +17,10 @@ import (
 	_ "github.com/epheo/anytype-go/client"
 )
 
-var disabledTextStyle = lipgloss.NewStyle().Strikethrough(true).Faint(true)
+var (
+	disabledTextStyle = lipgloss.NewStyle().Strikethrough(true).Faint(true)
+	authErrStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+)
 
 type AuthPage struct {
 	*models.ModelInitOnce
@@ -133,7 +136,7 @@ func (a *AuthPage) View() tea.View {
 	b.WriteString(fmt.Sprintf("%s\n\n", nextLabel))
 
 	if a.errorMsg != "" {
-		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("9")).Render("❌ Error: "+a.errorMsg) + "\n")
+		b.WriteString(authErrStyle.Render("❌ Error: "+a.errorMsg) + "\n")
 	}
 
 	if a.connected.Load() {
