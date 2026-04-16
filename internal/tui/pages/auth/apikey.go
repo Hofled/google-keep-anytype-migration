@@ -15,7 +15,6 @@ import (
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 	"github.com/epheo/anytype-go"
 	_ "github.com/epheo/anytype-go/client"
-	"github.com/google/uuid"
 )
 
 var (
@@ -23,12 +22,9 @@ var (
 	authErrStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
 )
 
-type AuthPage struct {
+type ApiKeyAuthPage struct {
 	*models.ModelInitOnce
-
-	id         models.PageId
-	nextPageId *models.PageId
-	prevPageId *models.PageId
+	*models.PageIds
 
 	addrInput    textinput.Model
 	keyInput     textinput.Model
@@ -47,7 +43,7 @@ type authResultMsg struct {
 	err     error
 }
 
-func NewAuthPage(appAuthState state.AppAuthStater, appViewState state.AppPageStater, prevPageId, nextPageId *models.PageId) (*AuthPage, error) {
+func NewApiKeyAuthPage(appAuthState state.AppAuthStater, appViewState state.AppPageStater) (*ApiKeyAuthPage, error) {
 	addrInput := textinput.New()
 	addrInput.SetValue("http://localhost:31009")
 	addrInput.Placeholder = "http://localhost:31009"
@@ -58,15 +54,13 @@ func NewAuthPage(appAuthState state.AppAuthStater, appViewState state.AppPageSta
 	keyInput.Placeholder = "Your API Key"
 	keyInput.SetWidth(50)
 
-	id, err := models.NewPageID()
+	pageIds, err := models.NewPageIds()
 	if err != nil {
-		return nil, fmt.Errorf("failed creating auth page: %w", err)
+		return nil, err
 	}
 
-	authPage := &AuthPage{
-		id:            id,
-		nextPageId:    nextPageId,
-		prevPageId:    prevPageId,
+	authPage := &ApiKeyAuthPage{
+		PageIds:       pageIds,
 		addrInput:     addrInput,
 		keyInput:      keyInput,
 		focusedIndex:  0,
@@ -80,11 +74,11 @@ func NewAuthPage(appAuthState state.AppAuthStater, appViewState state.AppPageSta
 	return authPage, nil
 }
 
-func (a *AuthPage) Init() tea.Cmd {
+func (a *ApiKeyAuthPage) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (a *AuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (a *ApiKeyAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -122,10 +116,10 @@ func (a *AuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return a, cmd
 }
 
-func (a *AuthPage) View() tea.View {
+func (a *ApiKeyAuthPage) View() tea.View {
 	var b strings.Builder
 
-	b.WriteString("Authentication\n\n")
+	b.WriteString("API Key Authentication\n\n")
 
 	b.WriteString(fmt.Sprintf("API Address: %s\n", a.addrInput.View()))
 	b.WriteString(fmt.Sprintf("API Key: %s\n\n", a.keyInput.View()))
@@ -159,38 +153,18 @@ func (a *AuthPage) View() tea.View {
 	return tea.NewView(b.String())
 }
 
-func (a *AuthPage) CanProceed() bool {
+func (a *ApiKeyAuthPage) CanProceed() bool {
 	return a.connected.Load()
 }
 
-func (a *AuthPage) GetData() any {
+func (a *ApiKeyAuthPage) GetData() any {
 	return map[string]string{
 		"addr": a.addrInput.Value(),
 		"key":  a.keyInput.Value(),
 	}
 }
 
-func (a *AuthPage) NextPageId() models.PageId {
-	if a.nextPageId != nil {
-		return *a.nextPageId
-	} else {
-		return models.PageId(uuid.Nil)
-	}
-}
-
-func (a *AuthPage) PrevPageId() models.PageId {
-	if a.prevPageId != nil {
-		return *a.prevPageId
-	} else {
-		return models.PageId(uuid.Nil)
-	}
-}
-
-func (a *AuthPage) ID() models.PageId {
-	return a.id
-}
-
-func (a *AuthPage) handleNavigation(key string) {
+func (a *ApiKeyAuthPage) handleNavigation(key string) {
 	switch key {
 	case "tab":
 		a.focusedIndex = (a.focusedIndex + 1) % 4
@@ -214,7 +188,7 @@ func (a *AuthPage) handleNavigation(key string) {
 	}
 }
 
-func (a *AuthPage) connect() tea.Cmd {
+func (a *ApiKeyAuthPage) connect() tea.Cmd {
 	if a.connected.Load() {
 		return nil
 	}
