@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	tea "charm.land/bubbletea/v2"
@@ -12,9 +13,12 @@ import (
 
 func main() {
 	appState := &state.AppState{}
-	viewState := &state.AppViewState{}
+	viewState := &state.AppPageState{}
 
-	authPage := auth.NewAuthPage(appState, viewState) // TODO refactor to lazy page construction
+	authPage, err := auth.NewAuthPage(appState, viewState, nil, nil) // TODO refactor to lazy page construction
+	if err != nil {
+		log.Panicln(err)
+	}
 
 	viewState.AddPages(authPage)
 

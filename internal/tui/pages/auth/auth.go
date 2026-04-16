@@ -15,6 +15,7 @@ import (
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 	"github.com/epheo/anytype-go"
 	_ "github.com/epheo/anytype-go/client"
+	"github.com/google/uuid"
 )
 
 var (
@@ -25,6 +26,10 @@ var (
 type AuthPage struct {
 	*models.ModelInitOnce
 
+	id         models.PageId
+	nextPageId *models.PageId
+	prevPageId *models.PageId
+
 	addrInput    textinput.Model
 	keyInput     textinput.Model
 	errorMsg     string
@@ -34,7 +39,7 @@ type AuthPage struct {
 	setClientOnce sync.Once
 
 	appAuthState state.AppAuthStater
-	appViewState state.AppViewStater
+	appViewState state.AppPageStater
 }
 
 type authResultMsg struct {
@@ -42,7 +47,7 @@ type authResultMsg struct {
 	err     error
 }
 
-func NewAuthPage(appAuthState state.AppAuthStater, appViewState state.AppViewStater) *AuthPage {
+func NewAuthPage(appAuthState state.AppAuthStater, appViewState state.AppPageStater, prevPageId, nextPageId *models.PageId) (*AuthPage, error) {
 	addrInput := textinput.New()
 	addrInput.SetValue("http://localhost:31009")
 	addrInput.Placeholder = "http://localhost:31009"
@@ -53,7 +58,15 @@ func NewAuthPage(appAuthState state.AppAuthStater, appViewState state.AppViewSta
 	keyInput.Placeholder = "Your API Key"
 	keyInput.SetWidth(50)
 
+	id, err := models.NewPageID()
+	if err != nil {
+		return nil, fmt.Errorf("failed creating auth page: %w", err)
+	}
+
 	authPage := &AuthPage{
+		id:            id,
+		nextPageId:    nextPageId,
+		prevPageId:    prevPageId,
 		addrInput:     addrInput,
 		keyInput:      keyInput,
 		focusedIndex:  0,
@@ -64,7 +77,7 @@ func NewAuthPage(appAuthState state.AppAuthStater, appViewState state.AppViewSta
 
 	authPage.ModelInitOnce = models.NewModelInitOnce(authPage)
 
-	return authPage
+	return authPage, nil
 }
 
 func (a *AuthPage) Init() tea.Cmd {
@@ -84,7 +97,7 @@ func (a *AuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if a.focusedIndex == 2 {
 				return a, a.connect()
 			} else if a.focusedIndex == 3 && a.CanProceed() {
-				a.NextPage()
+				a.appViewState.NextPage()
 				// Proceed to next page (handled by app)
 				return a, nil
 			}
@@ -157,12 +170,24 @@ func (a *AuthPage) GetData() any {
 	}
 }
 
-func (a *AuthPage) NextPage() {
-	a.appViewState.NextView()
+func (a *AuthPage) NextPageId() models.PageId {
+	if a.nextPageId != nil {
+		return *a.nextPageId
+	} else {
+		return models.PageId(uuid.Nil)
+	}
 }
 
-func (a *AuthPage) PrevPage() {
-	a.appViewState.PrevView()
+func (a *AuthPage) PrevPageId() models.PageId {
+	if a.prevPageId != nil {
+		return *a.prevPageId
+	} else {
+		return models.PageId(uuid.Nil)
+	}
+}
+
+func (a *AuthPage) ID() models.PageId {
+	return a.id
 }
 
 func (a *AuthPage) handleNavigation(key string) {

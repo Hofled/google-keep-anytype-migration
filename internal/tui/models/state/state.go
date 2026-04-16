@@ -1,52 +1,86 @@
 package state
 
-import "github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
+import (
+	"fmt"
+
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
+	"github.com/google/uuid"
+)
 
 // AppState holds the global state of the TUI application.
 type AppState struct {
 	AppAuthState
 }
 
-type AppViewState struct {
-	pages            []models.Page
-	currentViewIndex int
+type AppPageState struct {
+	pages         map[models.PageId]models.Page
+	currentPageId models.PageId
 }
 
-type AppViewStater interface {
-	HasViews() bool
-	NextView()
-	PrevView()
-	CurrentView() models.Page
-	CurrentViewIndex() int
+type AppPageStater interface {
+	HasPages() bool
+	NextPage() error
+	PrevPage() error
+	ShowPage(pageId models.PageId) error
+	CurrentPage() models.Page
 	AddPages(pages ...models.Page)
 }
 
-func (avs *AppViewState) HasViews() bool {
+func NewAppPageState() AppPageStater {
+	return &AppPageState{
+		pages:         make(map[models.PageId]models.Page),
+		currentPageId: models.PageId{},
+	}
+}
+
+func (avs *AppPageState) HasPages() bool {
 	return len(avs.pages) > 0
 }
 
-func (avs *AppViewState) AddPages(pages ...models.Page) {
-	avs.pages = append(avs.pages, pages...)
+func (avs *AppPageState) AddPages(pages ...models.Page) {
+	for _, page := range pages {
+		avs.pages[page.ID()] = page
+	}
 }
 
-func (avs *AppViewState) NextView() {
-	avs.currentViewIndex = (avs.currentViewIndex + 1) % len(avs.pages)
-	avs.pages[avs.currentViewIndex].InitOnce()
-}
-
-func (avs *AppViewState) PrevView() {
-	avs.currentViewIndex = (avs.currentViewIndex - 1) % len(avs.pages)
-	avs.pages[avs.currentViewIndex].InitOnce()
-}
-
-func (avs *AppViewState) CurrentView() models.Page {
-	if avs.currentViewIndex < len(avs.pages) {
-		return avs.pages[avs.CurrentViewIndex()]
+func (avs *AppPageState) NextPage() error {
+	if currentPage := avs.CurrentPage(); currentPage != nil {
+		if nextPageId := currentPage.NextPageId(); nextPageId != models.PageId(uuid.Nil) {
+			return avs.ShowPage(nextPageId)
+		}
 	}
 
 	return nil
 }
 
-func (avs *AppViewState) CurrentViewIndex() int {
-	return avs.currentViewIndex
+func (avs *AppPageState) PrevPage() error {
+	if currentPage := avs.CurrentPage(); currentPage != nil {
+		if prevPageId := currentPage.PrevPageId(); prevPageId != models.PageId(uuid.Nil) {
+			return avs.ShowPage(prevPageId)
+		}
+	}
+
+	return nil
+}
+
+func (avs *AppPageState) CurrentPage() models.Page {
+	currentPage, exists := avs.pages[avs.currentPageId]
+	if !exists || currentPage == nil {
+		return nil
+	}
+
+	return currentPage
+}
+
+func (avs *AppPageState) ShowPage(pageId models.PageId) error {
+	page, exists := avs.pages[pageId]
+	if !exists || page == nil {
+		return fmt.Errorf("page with id %s not found", pageId)
+	}
+
+	avs.currentPageId = pageId
+
+	page.InitOnce()
+
+	return nil
 }
