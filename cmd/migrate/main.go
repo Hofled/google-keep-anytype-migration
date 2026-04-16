@@ -19,14 +19,20 @@ func main() {
 		log.Panicln(err)
 	}
 
-	authMethodPage, err := auth.NewMethodPage(pageState, apiKeyAuthPage.ID())
+	challengeAuthPage, err := auth.NewChallengeAuthPage(appState, pageState)
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	authMethodPage, err := auth.NewMethodPage(pageState, apiKeyAuthPage.ID(), challengeAuthPage.ID())
 	if err != nil {
 		log.Panicln(err)
 	}
 
 	apiKeyAuthPage.SetPrevPage(authMethodPage.ID())
+	challengeAuthPage.SetPrevPage(authMethodPage.ID())
 
-	pageState.AddPages(authMethodPage, apiKeyAuthPage)
+	pageState.AddPages(authMethodPage, apiKeyAuthPage, challengeAuthPage)
 
 	pageState.ShowPage(authMethodPage.ID())
 

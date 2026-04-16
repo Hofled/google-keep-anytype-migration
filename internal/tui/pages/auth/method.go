@@ -36,13 +36,20 @@ func (i item) FilterValue() string {
 	return i.title
 }
 
-func NewMethodPage(appPageState state.AppPageStater, apiKeyAuthPageId models.PageId) (*MethodPage, error) {
+func NewMethodPage(appPageState state.AppPageStater, apiKeyAuthPageId, challengeAuthPageId models.PageId) (*MethodPage, error) {
 	pageIds, err := models.NewPageIds()
 	if err != nil {
 		return nil, err
 	}
 
-	list := list.New([]list.Item{item{title: "API Key Authentication", desc: "Authenticate using API key", pageId: apiKeyAuthPageId}}, list.NewDefaultDelegate(), 0, 0)
+	list := list.New([]list.Item{
+		item{
+			title: "API Key Authentication", desc: "Authenticate using API key", pageId: apiKeyAuthPageId,
+		},
+		item{
+			title: "Challenge Authentication", desc: "Authenticate using temp challenge code", pageId: challengeAuthPageId,
+		},
+	}, list.NewDefaultDelegate(), 0, 0)
 	list.Title = "Authentication Method"
 
 	methodPage := &MethodPage{
@@ -57,14 +64,10 @@ func NewMethodPage(appPageState state.AppPageStater, apiKeyAuthPageId models.Pag
 	return methodPage, nil
 }
 
-// Init is the first function that will be called. It returns an optional
-// initial command. To not perform an initial command return nil.
 func (m *MethodPage) Init() tea.Cmd {
 	return nil
 }
 
-// Update is called when a message is received. Use it to inspect messages
-// and, in response, update the model and/or send a command.
 func (m *MethodPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -84,8 +87,6 @@ func (m *MethodPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-// View renders the program's UI, which can be a string or a [Layer]. The
-// view is rendered after every Update.
 func (m *MethodPage) View() tea.View {
 	v := tea.NewView(m.list.View())
 	return v
