@@ -7,14 +7,14 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/app"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
-	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages/auth"
 )
 
 func main() {
 	appState := &state.AppState{}
 	viewState := &state.AppViewState{}
 
-	authPage := pages.NewAuthPage(appState, viewState) // TODO refactor to lazy page construction
+	authPage := auth.NewAuthPage(appState, viewState) // TODO refactor to lazy page construction
 
 	viewState.AddPages(authPage)
 
