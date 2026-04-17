@@ -13,13 +13,13 @@ import (
 
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
 	"github.com/epheo/anytype-go"
 	_ "github.com/epheo/anytype-go/client"
 )
 
 var (
-	disabledTextStyle = lipgloss.NewStyle().Strikethrough(true).Faint(true)
-	authErrStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+	authErrStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
 )
 
 type ApiKeyAuthPage struct {
@@ -127,29 +127,31 @@ func (a *ApiKeyAuthPage) View() tea.View {
 
 	connectLabel := "Connect" // TODO add spinner during connection
 	if a.connected.Load() {
-		connectLabel = disabledTextStyle.Render(connectLabel)
+		connectLabel = styles.DisabledText.Render(connectLabel)
 	}
 	if a.focusedIndex == 2 {
 		connectLabel = "[" + connectLabel + "]"
 	}
 	b.WriteString(fmt.Sprintf("%s\n", connectLabel))
 
-	nextLabel := "Next"
-	if !a.CanProceed() {
-		nextLabel = disabledTextStyle.Render(nextLabel)
-	}
-	if a.focusedIndex == 3 {
-		nextLabel = "[" + nextLabel + "]"
-	}
-	b.WriteString(fmt.Sprintf("%s\n", nextLabel))
-
 	prevLabel := "Prev"
 	if a.focusedIndex == 4 {
 		prevLabel = "[" + prevLabel + "]"
 	}
-	b.WriteString(fmt.Sprintf("%s\n", prevLabel))
+	b.WriteString(fmt.Sprintf("%s", prevLabel))
 
-	b.WriteString("\n")
+	b.WriteRune(' ')
+
+	nextLabel := "Next"
+	if !a.CanProceed() {
+		nextLabel = styles.DisabledText.Render(nextLabel)
+	}
+	if a.focusedIndex == 3 {
+		nextLabel = "[" + nextLabel + "]"
+	}
+	b.WriteString(fmt.Sprintf("%s", nextLabel))
+
+	b.WriteString("\n\n")
 
 	if a.errorMsg != "" {
 		b.WriteString(authErrStyle.Render("❌ Error: "+a.errorMsg) + "\n")
