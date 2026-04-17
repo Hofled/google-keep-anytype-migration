@@ -68,6 +68,14 @@ func (c *Client) newRequest(ctx context.Context, method, apiPath string, bodyRea
 	return req, nil
 }
 
+type InvalidResponseErr struct {
+	resp *http.Response
+}
+
+func (ire InvalidResponseErr) Error() string {
+	return fmt.Sprintf("invalid response: %d %s", ire.resp.StatusCode, ire.resp.Status)
+}
+
 type ChallengeRequest struct {
 	AppName string `json:"app_name"`
 }
@@ -99,6 +107,10 @@ func (c *Client) CreateChallenge(ctx context.Context) (*ChallengeResponse, error
 	}
 
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, &InvalidResponseErr{resp}
+	}
 
 	var challengeResp ChallengeResponse
 	if decodeErr := json.NewDecoder(resp.Body).Decode(&challengeResp); decodeErr != nil {
@@ -141,6 +153,10 @@ func (c *Client) CreateApiKey(ctx context.Context, challengeId, code string) (*C
 	}
 
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, &InvalidResponseErr{resp}
+	}
 
 	var apiKeyResp CreateApiKeyResponse
 	if decodeErr := json.NewDecoder(resp.Body).Decode(&resp); decodeErr != nil {
