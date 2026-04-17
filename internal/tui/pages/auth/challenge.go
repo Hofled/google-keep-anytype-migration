@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"strings"
 
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages/auth/challenge"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
 )
 
 type viewState uint
@@ -21,6 +24,20 @@ const (
 	nextFocusIndex int = iota
 	prevFocusIndex
 )
+
+type keyMap struct {
+	Back key.Binding
+}
+
+func (k keyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Back}
+}
+
+func (k keyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Back},
+	}
+}
 
 type ChallengeAuthPage struct {
 	*models.ModelInitOnce
@@ -36,10 +53,22 @@ type ChallengeAuthPage struct {
 
 	subViewFocused bool
 
-	focusedIndex int
+	focusIndex int
+
+	connected bool
+
+	help       help.Model
+	keyMapping keyMap
 }
 
 func NewChallengeAuthPage(appAuthStater state.AppAuthStater, appPageState state.AppPageStater) (*ChallengeAuthPage, error) {
+	keyMapping := keyMap{
+		Back: key.NewBinding(
+			key.WithKeys("esc"),
+			key.WithHelp("esc", "● return to challenge view"),
+		),
+	}
+
 	pageIds, err := models.NewPageIds()
 	if err != nil {
 		return nil, err
@@ -52,8 +81,10 @@ func NewChallengeAuthPage(appAuthStater state.AppAuthStater, appPageState state.
 		currentSubView: initView,
 		initChallenge:  challenge.NewInitModel(),
 		challengeCode:  challenge.NewCodeModel(),
-		focusedIndex:   0,
+		focusIndex:     0,
 		subViewFocused: true,
+		help:           help.New(),
+		keyMapping:     keyMapping,
 	}
 
 	p.ModelInitOnce = models.NewModelInitOnce(p)
@@ -70,15 +101,21 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
-		key := msg.String()
-		cap.handleViewFocus(key)
+		pressedKey := msg.String()
+		if key.Matches(msg.Key(), cap.keyMapping.Back) {
+			cap.currentSubView = initView
+		}
+
+		cap.handleViewFocus(pressedKey)
 
 		if !cap.subViewFocused {
-			cap.handleNavigation(key)
-			if key == "enter" {
-				switch cap.focusedIndex {
+			cap.handleNavigation(pressedKey)
+			if pressedKey == "enter" {
+				switch cap.focusIndex {
 				case nextFocusIndex:
-					cap.appPageState.NextPage()
+					if cap.connected {
+						cap.appPageState.NextPage()
+					}
 					return cap, nil
 				case prevFocusIndex:
 					cap.appPageState.PrevPage()
@@ -93,6 +130,9 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var m tea.Model
 		m, cmd = cap.challengeCode.Update(msg)
 		cap.challengeCode = m.(*challenge.CodeModel)
+	case challenge.ApiKeyMsg:
+		cap.appAuthState.SetAPIKey(msg.ApiKey)
+		cap.connected = true
 	}
 
 	switch cap.currentSubView {
@@ -119,9 +159,9 @@ func (cap *ChallengeAuthPage) handleViewFocus(key string) {
 func (cap *ChallengeAuthPage) handleNavigation(key string) {
 	switch key {
 	case "right":
-		cap.focusedIndex = (cap.focusedIndex + 1) % 2
+		cap.focusIndex = (cap.focusIndex + 1) % 2
 	case "left":
-		cap.focusedIndex = (cap.focusedIndex - 1 + 2) % 2
+		cap.focusIndex = (cap.focusIndex - 1 + 2) % 2
 	}
 }
 
@@ -142,7 +182,7 @@ func (cap *ChallengeAuthPage) View() tea.View {
 	b.WriteString(subView)
 
 	prevLabel := "Prev"
-	if !cap.subViewFocused && cap.focusedIndex == prevFocusIndex {
+	if !cap.subViewFocused && cap.focusIndex == prevFocusIndex {
 		prevLabel = fmt.Sprintf("[%s]", prevLabel)
 	}
 	b.WriteString(fmt.Sprintf("%s", prevLabel))
@@ -150,12 +190,20 @@ func (cap *ChallengeAuthPage) View() tea.View {
 	b.WriteRune(' ')
 
 	nextLabel := "Next"
-	if !cap.subViewFocused && cap.focusedIndex == nextFocusIndex {
+	if !cap.connected {
+		nextLabel = styles.DisabledText.Render(nextLabel)
+	}
+	if !cap.subViewFocused && cap.focusIndex == nextFocusIndex {
 		nextLabel = fmt.Sprintf("[%s]", nextLabel)
 	}
 	b.WriteString(fmt.Sprintf("%s", nextLabel))
 
 	b.WriteString("\n")
 
-	return tea.NewView(b.String())
+	bString := b.String()
+
+	helpView := cap.help.View(cap.keyMapping)
+	height := 8 - strings.Count(bString, "\n") - strings.Count(helpView, "\n")
+
+	return tea.NewView(bString + strings.Repeat("\n", height) + helpView)
 }
