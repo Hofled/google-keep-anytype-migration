@@ -52,7 +52,7 @@ func (c *Client) newRequest(ctx context.Context, method, apiPath string, bodyRea
 	reqUrl := c.baseUrl.JoinPath(apiVersion, parsedPath.Path)
 	reqUrl.RawQuery = parsedPath.RawQuery
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqUrl.String(), bodyReader)
+	req, err := http.NewRequestWithContext(ctx, method, reqUrl.String(), bodyReader)
 	if err != nil {
 		return nil, err
 	}
