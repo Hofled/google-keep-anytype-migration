@@ -31,6 +31,7 @@ func NewCodeModel() *CodeModel {
 	codeInput.Placeholder = "1234"
 	codeInput.SetWidth(4)
 	codeInput.CharLimit = 4
+	codeInput.Focus()
 
 	return &CodeModel{
 		codeInput: codeInput,
