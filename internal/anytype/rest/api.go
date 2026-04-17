@@ -20,8 +20,9 @@ const (
 )
 
 type Client struct {
-	baseUrl *url.URL
-	apiKey  string
+	baseUrl    *url.URL
+	apiKey     string
+	httpClient http.Client
 }
 
 func NewClient(baseUrl string) (*Client, error) {
@@ -32,6 +33,9 @@ func NewClient(baseUrl string) (*Client, error) {
 
 	return &Client{
 		baseUrl: parsedUrl,
+		httpClient: http.Client{
+			Timeout: defaultTimeout,
+		},
 	}, nil
 }
 
@@ -89,11 +93,7 @@ func (c *Client) CreateChallenge(ctx context.Context) (*ChallengeResponse, error
 		return nil, err
 	}
 
-	client := http.Client{
-		Timeout: defaultTimeout,
-	}
-
-	resp, err := client.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -106,4 +106,46 @@ func (c *Client) CreateChallenge(ctx context.Context) (*ChallengeResponse, error
 	}
 
 	return &challengeResp, nil
+}
+
+type CreateApiKeyRequest struct {
+	ChallengeId string `json:"challenge_id"`
+	Code        string `json:"code"`
+}
+
+type CreateApiKeyResponse struct {
+	ApiKey string `json:"api_key"`
+}
+
+const createApiKeyEndpoint = "auth/api_keys"
+
+func (c *Client) CreateApiKey(ctx context.Context, challengeId, code string) (*CreateApiKeyResponse, error) {
+	apiKeyReq := CreateApiKeyRequest{
+		ChallengeId: challengeId,
+		Code:        code,
+	}
+
+	buf := &bytes.Buffer{}
+	if err := json.NewEncoder(buf).Encode(&apiKeyReq); err != nil {
+		return nil, err
+	}
+
+	req, err := c.newRequest(ctx, http.MethodPost, createApiKeyEndpoint, buf)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	var apiKeyResp CreateApiKeyResponse
+	if decodeErr := json.NewDecoder(resp.Body).Decode(&resp); decodeErr != nil {
+		return nil, decodeErr
+	}
+
+	return &apiKeyResp, nil
 }
