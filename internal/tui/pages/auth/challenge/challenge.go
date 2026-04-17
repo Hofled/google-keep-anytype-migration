@@ -1,4 +1,4 @@
-package auth
+package challenge
 
 import (
 	"fmt"
@@ -9,7 +9,6 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
-	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages/auth/challenge"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
 )
 
@@ -48,8 +47,8 @@ type ChallengeAuthPage struct {
 
 	currentSubView viewState
 
-	initChallenge *challenge.InitModel
-	challengeCode *challenge.CodeModel
+	initChallenge *InitModel
+	challengeCode *CodeModel
 
 	subViewFocused bool
 
@@ -79,8 +78,8 @@ func NewChallengeAuthPage(appAuthStater state.AppAuthStater, appPageState state.
 		appAuthState:   appAuthStater,
 		appPageState:   appPageState,
 		currentSubView: initView,
-		initChallenge:  challenge.NewInitModel(),
-		challengeCode:  challenge.NewCodeModel(),
+		initChallenge:  NewInitModel(),
+		challengeCode:  NewCodeModel(),
 		focusIndex:     0,
 		subViewFocused: true,
 		help:           help.New(),
@@ -125,12 +124,12 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			return cap, nil
 		}
-	case challenge.ChallengeIdMsg:
+	case ChallengeIdMsg:
 		cap.currentSubView = codeView
 		var m tea.Model
 		m, cmd = cap.challengeCode.Update(msg)
-		cap.challengeCode = m.(*challenge.CodeModel)
-	case challenge.ApiKeyMsg:
+		cap.challengeCode = m.(*CodeModel)
+	case ApiKeyMsg:
 		cap.appAuthState.SetAPIKey(msg.ApiKey)
 		cap.connected = true
 	}
@@ -139,11 +138,11 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case initView:
 		var m tea.Model
 		m, cmd = cap.initChallenge.Update(msg)
-		cap.initChallenge = m.(*challenge.InitModel)
+		cap.initChallenge = m.(*InitModel)
 	case codeView:
 		var m tea.Model
 		m, cmd = cap.challengeCode.Update(msg)
-		cap.challengeCode = m.(*challenge.CodeModel)
+		cap.challengeCode = m.(*CodeModel)
 	}
 
 	return cap, cmd

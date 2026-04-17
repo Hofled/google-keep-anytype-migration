@@ -8,6 +8,7 @@ import (
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/app"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages/auth"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages/auth/challenge"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 		log.Panicln(err)
 	}
 
-	challengeAuthPage, err := auth.NewChallengeAuthPage(appState, pageState)
+	challengeAuthPage, err := challenge.NewChallengeAuthPage(appState, pageState)
 	if err != nil {
 		log.Panicln(err)
 	}
