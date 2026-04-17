@@ -1,11 +1,13 @@
 package state
 
-import "github.com/epheo/anytype-go"
+import (
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype/rest"
+)
 
 type AppAuthState struct {
 	APIAddress string
 	APIKey     string
-	client     anytype.Client
+	client     *rest.Client
 }
 
 type AppAuthStater interface {
@@ -13,8 +15,8 @@ type AppAuthStater interface {
 	SetAPIAddress(addr string)
 	GetAPIKey() string
 	SetAPIKey(key string)
-	GetClient() anytype.Client
-	SetClient(client anytype.Client)
+	GetClient() *rest.Client
+	SetClient(client *rest.Client)
 }
 
 func (as *AppAuthState) GetAPIAddress() string {
@@ -33,10 +35,10 @@ func (as *AppAuthState) SetAPIKey(key string) {
 	as.APIKey = key
 }
 
-func (as *AppAuthState) GetClient() anytype.Client {
+func (as *AppAuthState) GetClient() *rest.Client {
 	return as.client
 }
 
-func (as *AppAuthState) SetClient(client anytype.Client) {
+func (as *AppAuthState) SetClient(client *rest.Client) {
 	as.client = client
 }
