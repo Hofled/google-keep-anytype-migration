@@ -69,11 +69,11 @@ func (c *Client) newRequest(ctx context.Context, method, apiPath string, bodyRea
 }
 
 type InvalidResponseErr struct {
-	resp *http.Response
+	Resp *http.Response
 }
 
 func (ire InvalidResponseErr) Error() string {
-	return fmt.Sprintf("invalid response: %d %s", ire.resp.StatusCode, ire.resp.Status)
+	return fmt.Sprintf("invalid response: %s", ire.Resp.Status)
 }
 
 type ChallengeRequest struct {
@@ -159,7 +159,7 @@ func (c *Client) CreateApiKey(ctx context.Context, challengeId, code string) (*C
 	}
 
 	var apiKeyResp CreateApiKeyResponse
-	if decodeErr := json.NewDecoder(resp.Body).Decode(&resp); decodeErr != nil {
+	if decodeErr := json.NewDecoder(resp.Body).Decode(&apiKeyResp); decodeErr != nil {
 		return nil, decodeErr
 	}
 
