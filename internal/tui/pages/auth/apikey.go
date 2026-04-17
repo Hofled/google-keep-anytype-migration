@@ -11,10 +11,10 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype/rest"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
-	"github.com/epheo/anytype-go"
 	_ "github.com/epheo/anytype-go/client"
 )
 
@@ -196,19 +196,21 @@ func (a *ApiKeyAuthPage) connect() tea.Cmd {
 		return nil
 	}
 
-	return tea.Cmd(func() tea.Msg {
-		authenticatedClient := anytype.NewClient(anytype.WithBaseURL(a.addrInput.Value()), anytype.WithAppKey(a.keyInput.Value()))
-		if authenticatedClient == nil {
-			return authResultMsg{success: false, err: fmt.Errorf("failed creating client")}
-		}
+	client, err := rest.NewClient(a.addrInput.Value())
+	if err != nil {
+		return nil
+	}
 
-		if _, err := authenticatedClient.Spaces().List(context.Background()); err != nil {
+	client.SetApiKey(a.keyInput.Value())
+
+	return tea.Cmd(func() tea.Msg {
+		if _, err := client.ListSpaces(context.Background()); err != nil {
 			return authResultMsg{success: false, err: fmt.Errorf("invalid API key: %w", err)}
 		}
 
 		a.setClientOnce.Do(func() {
 			a.connected.Store(true)
-			a.appAuthState.SetClient(authenticatedClient)
+			a.appAuthState.SetClient(client)
 		})
 
 		return authResultMsg{success: true, err: nil}
