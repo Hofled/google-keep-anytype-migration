@@ -47,7 +47,7 @@ func (cm *CodeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		switch msg.String() {
-		case "tab", "shift+tab", "up", "down":
+		case "up", "down":
 			cm.handleNavigation(msg.String())
 			return cm, nil
 
@@ -88,9 +88,9 @@ func (cm *CodeModel) View() tea.View {
 
 func (cm *CodeModel) handleNavigation(key string) {
 	switch key {
-	case "tab", "down":
+	case "down":
 		cm.focusIndex = (cm.focusIndex + 1) % 2
-	case "shift+tab", "up":
+	case "up":
 		cm.focusIndex = (cm.focusIndex - 1 + 2) % 2
 	}
 

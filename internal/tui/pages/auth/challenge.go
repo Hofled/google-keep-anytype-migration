@@ -17,6 +17,11 @@ const (
 	codeView
 )
 
+const (
+	nextFocusIndex int = iota
+	prevFocusIndex
+)
+
 type ChallengeAuthPage struct {
 	*models.ModelInitOnce
 	*models.PageIds
@@ -24,10 +29,12 @@ type ChallengeAuthPage struct {
 	appPageState state.AppPageStater
 	appAuthState state.AppAuthStater
 
-	currentView viewState
+	currentSubView viewState
 
 	initChallenge *challenge.InitModel
 	challengeCode *challenge.CodeModel
+
+	subViewFocused bool
 
 	focusedIndex int
 }
@@ -39,13 +46,14 @@ func NewChallengeAuthPage(appAuthStater state.AppAuthStater, appPageState state.
 	}
 
 	p := &ChallengeAuthPage{
-		PageIds:       pageIds,
-		appAuthState:  appAuthStater,
-		appPageState:  appPageState,
-		currentView:   initView,
-		initChallenge: challenge.NewInitModel(),
-		challengeCode: challenge.NewCodeModel(),
-		focusedIndex:  0,
+		PageIds:        pageIds,
+		appAuthState:   appAuthStater,
+		appPageState:   appPageState,
+		currentSubView: initView,
+		initChallenge:  challenge.NewInitModel(),
+		challengeCode:  challenge.NewCodeModel(),
+		focusedIndex:   0,
+		subViewFocused: true,
 	}
 
 	p.ModelInitOnce = models.NewModelInitOnce(p)
@@ -61,14 +69,33 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		key := msg.String()
+		cap.handleViewFocus(key)
+
+		if !cap.subViewFocused {
+			cap.handleNavigation(key)
+			if key == "enter" {
+				switch cap.focusedIndex {
+				case nextFocusIndex:
+					cap.appPageState.NextPage()
+					return cap, nil
+				case prevFocusIndex:
+					cap.appPageState.PrevPage()
+					return cap, nil
+				}
+			}
+
+			return cap, nil
+		}
 	case challenge.ChallengeIdMsg:
-		cap.currentView = codeView
+		cap.currentSubView = codeView
 		var m tea.Model
 		m, cmd = cap.challengeCode.Update(msg)
 		cap.challengeCode = m.(*challenge.CodeModel)
 	}
 
-	switch cap.currentView {
+	switch cap.currentSubView {
 	case initView:
 		var m tea.Model
 		m, cmd = cap.initChallenge.Update(msg)
@@ -82,16 +109,19 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return cap, cmd
 }
 
+func (cap *ChallengeAuthPage) handleViewFocus(key string) {
+	switch key {
+	case "tab", "shift+tab":
+		cap.subViewFocused = !cap.subViewFocused
+	}
+}
+
 func (cap *ChallengeAuthPage) handleNavigation(key string) {
 	switch key {
-	case "tab":
-		cap.focusedIndex = (cap.focusedIndex + 1) % 4
-	case "shift+tab":
-		cap.focusedIndex = (cap.focusedIndex - 1 + 4) % 4
-	case "up":
-		cap.focusedIndex = (cap.focusedIndex - 1 + 4) % 4
-	case "down":
-		cap.focusedIndex = (cap.focusedIndex + 1) % 4
+	case "right":
+		cap.focusedIndex = (cap.focusedIndex + 1) % 2
+	case "left":
+		cap.focusedIndex = (cap.focusedIndex - 1 + 2) % 2
 	}
 }
 
@@ -102,7 +132,7 @@ func (cap *ChallengeAuthPage) View() tea.View {
 
 	var subView string
 
-	switch cap.currentView {
+	switch cap.currentSubView {
 	case initView:
 		subView = cap.initChallenge.View().Content
 	case codeView:
@@ -111,17 +141,21 @@ func (cap *ChallengeAuthPage) View() tea.View {
 
 	b.WriteString(subView)
 
-	nextLabel := "Next"
-	if cap.focusedIndex == 2 {
-		nextLabel = fmt.Sprintf("[%s]", nextLabel)
-	}
-	b.WriteString(fmt.Sprintf("%s\n", nextLabel))
-
 	prevLabel := "Prev"
-	if cap.focusedIndex == 3 {
+	if !cap.subViewFocused && cap.focusedIndex == prevFocusIndex {
 		prevLabel = fmt.Sprintf("[%s]", prevLabel)
 	}
-	b.WriteString(fmt.Sprintf("%s\n", prevLabel))
+	b.WriteString(fmt.Sprintf("%s", prevLabel))
+
+	b.WriteRune(' ')
+
+	nextLabel := "Next"
+	if !cap.subViewFocused && cap.focusedIndex == nextFocusIndex {
+		nextLabel = fmt.Sprintf("[%s]", nextLabel)
+	}
+	b.WriteString(fmt.Sprintf("%s", nextLabel))
+
+	b.WriteString("\n")
 
 	return tea.NewView(b.String())
 }
