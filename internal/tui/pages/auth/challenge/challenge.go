@@ -26,15 +26,16 @@ const (
 
 type keyMap struct {
 	Back key.Binding
+	Tab  key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Back}
+	return []key.Binding{k.Back, k.Tab}
 }
 
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Back},
+		{k.Back, k.Tab},
 	}
 }
 
@@ -64,7 +65,11 @@ func NewChallengeAuthPage(appAuthStater state.AppAuthStater, appPageState state.
 	keyMapping := keyMap{
 		Back: key.NewBinding(
 			key.WithKeys("esc"),
-			key.WithHelp("esc", "● return to challenge view"),
+			key.WithHelp("esc ▣", "return to challenge view"),
+		),
+		Tab: key.NewBinding(
+			key.WithKeys("tab"),
+			key.WithHelp("⇆ / tab", "change focus between view and nav"),
 		),
 	}
 
