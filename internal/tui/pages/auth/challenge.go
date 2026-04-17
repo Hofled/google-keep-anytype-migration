@@ -66,7 +66,6 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var m tea.Model
 		m, cmd = cap.challengeCode.Update(msg)
 		cap.challengeCode = m.(*challenge.CodeModel)
-		break
 	}
 
 	switch cap.currentView {
@@ -74,12 +73,10 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var m tea.Model
 		m, cmd = cap.initChallenge.Update(msg)
 		cap.initChallenge = m.(*challenge.InitModel)
-		break
 	case codeView:
 		var m tea.Model
 		m, cmd = cap.challengeCode.Update(msg)
 		cap.challengeCode = m.(*challenge.CodeModel)
-		break
 	}
 
 	return cap, cmd
@@ -108,10 +105,8 @@ func (cap *ChallengeAuthPage) View() tea.View {
 	switch cap.currentView {
 	case initView:
 		subView = cap.initChallenge.View().Content
-		break
 	case codeView:
 		subView = cap.challengeCode.View().Content
-		break
 	}
 
 	b.WriteString(subView)
