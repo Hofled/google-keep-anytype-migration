@@ -86,11 +86,6 @@ type ChallengeResponse struct {
 
 const challengeEndpoint = "auth/challenges"
 
-var createChallengeExpectedRespCodes = map[int]struct{}{
-	http.StatusOK:      {},
-	http.StatusCreated: {},
-}
-
 func (c *Client) CreateChallenge(ctx context.Context) (*ChallengeResponse, error) {
 	challengeReq := ChallengeRequest{
 		AppName: consts.AppName,
@@ -113,7 +108,7 @@ func (c *Client) CreateChallenge(ctx context.Context) (*ChallengeResponse, error
 
 	defer resp.Body.Close()
 
-	if _, ok := createChallengeExpectedRespCodes[resp.StatusCode]; !ok {
+	if resp.StatusCode != http.StatusCreated {
 		return nil, &InvalidResponseErr{resp}
 	}
 
@@ -159,7 +154,7 @@ func (c *Client) CreateApiKey(ctx context.Context, challengeId, code string) (*C
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusCreated {
 		return nil, &InvalidResponseErr{resp}
 	}
 
