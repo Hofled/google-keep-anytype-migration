@@ -17,6 +17,8 @@ import (
 type spacesListKeyMap struct {
 	toggleSelection key.Binding
 	confirmSpaces   key.Binding
+	selectAll       key.Binding
+	deselectAll     key.Binding
 }
 
 func newSpacesListKeyMap() *spacesListKeyMap {
@@ -28,6 +30,14 @@ func newSpacesListKeyMap() *spacesListKeyMap {
 		confirmSpaces: key.NewBinding(
 			key.WithKeys("enter"),
 			key.WithHelp("↵/enter", "confirm selected"),
+		),
+		selectAll: key.NewBinding(
+			key.WithKeys("a"),
+			key.WithHelp("a", "select all"),
+		),
+		deselectAll: key.NewBinding(
+			key.WithKeys("A"),
+			key.WithHelp("⇧+a", "deselect all"),
 		),
 	}
 }
@@ -130,9 +140,16 @@ func (sm *SpacesPageModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		sm.spacesList = newSpacesList
 		return sm, nil
 	case tea.KeyPressMsg:
-		if key.Matches(msgT.Key(), sm.keyMap.confirmSpaces) {
-			if cmd, err := sm.pageState.NextPage(); err != nil {
-				cmds = append(cmds, cmd)
+		if sm.spacesList.FilterState() != bubblesList.Filtering {
+			k := msgT.Key()
+			if key.Matches(k, sm.keyMap.confirmSpaces) {
+				if cmd, err := sm.pageState.NextPage(); err != nil {
+					cmds = append(cmds, cmd)
+				}
+			} else if key.Matches(k, sm.keyMap.selectAll) {
+				sm.spacesList.SetAll(true)
+			} else if key.Matches(k, sm.keyMap.deselectAll) {
+				sm.spacesList.SetAll(false)
 			}
 		}
 	}
@@ -161,6 +178,8 @@ func constructSpacesList(msg spacesListMsg, w, h int, keyMap *spacesListKeyMap) 
 	keyBindings := []key.Binding{
 		keyMap.toggleSelection,
 		keyMap.confirmSpaces,
+		keyMap.selectAll,
+		keyMap.deselectAll,
 	}
 
 	spacesMultiSelect.Title = spacesListTitle

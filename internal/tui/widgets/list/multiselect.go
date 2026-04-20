@@ -173,6 +173,14 @@ func NewMultiSelect(items []bubblesList.DefaultItem, width, height int, selectio
 	}, nil
 }
 
+func (m *MultiSelectModel) SetAll(selected bool) {
+	for _, v := range m.VisibleItems() {
+		if mi, ok := v.(MultiSelectItemer); ok {
+			m.multiSelectDelegate.SetSelected(mi.Id(), selected)
+		}
+	}
+}
+
 func (m *MultiSelectModel) ToggleSelection() {
 	selectedItem := m.SelectedItem()
 	if mi, ok := selectedItem.(MultiSelectItemer); ok {
