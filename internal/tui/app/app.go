@@ -8,7 +8,7 @@ import (
 // App manages the overall TUI application state and page navigation.
 type App struct {
 	state     *state.AppState
-	pageState *state.AppPageState
+	pageState state.AppPageStater
 }
 
 // NewApp creates a new TUI application with the given pages.

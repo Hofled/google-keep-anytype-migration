@@ -3,6 +3,7 @@ package state
 import (
 	"fmt"
 
+	tea "charm.land/bubbletea/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/google/uuid"
 )
@@ -19,9 +20,9 @@ type AppPageState struct {
 
 type AppPageStater interface {
 	HasPages() bool
-	NextPage() error
-	PrevPage() error
-	ShowPage(pageId models.PageId) error
+	NextPage() (tea.Cmd, error)
+	PrevPage() (tea.Cmd, error)
+	ShowPage(pageId models.PageId) (tea.Cmd, error)
 	CurrentPage() models.Page
 	AddPages(pages ...models.Page)
 }
@@ -31,6 +32,10 @@ func NewAppPageState() *AppPageState {
 		pages:         make(map[models.PageId]models.Page),
 		currentPageId: models.PageId(uuid.Nil),
 	}
+}
+
+func (aps *AppPageState) SetCurrentPage(pageId models.PageId) {
+	aps.currentPageId = pageId
 }
 
 func (avs *AppPageState) HasPages() bool {
@@ -43,24 +48,24 @@ func (avs *AppPageState) AddPages(pages ...models.Page) {
 	}
 }
 
-func (avs *AppPageState) NextPage() error {
+func (avs *AppPageState) NextPage() (tea.Cmd, error) {
 	if currentPage := avs.CurrentPage(); currentPage != nil {
 		if nextPageId := currentPage.NextPageId(); nextPageId != models.PageId(uuid.Nil) {
 			return avs.ShowPage(nextPageId)
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
-func (avs *AppPageState) PrevPage() error {
+func (avs *AppPageState) PrevPage() (tea.Cmd, error) {
 	if currentPage := avs.CurrentPage(); currentPage != nil {
 		if prevPageId := currentPage.PrevPageId(); prevPageId != models.PageId(uuid.Nil) {
 			return avs.ShowPage(prevPageId)
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
 func (avs *AppPageState) CurrentPage() models.Page {
@@ -72,15 +77,13 @@ func (avs *AppPageState) CurrentPage() models.Page {
 	return currentPage
 }
 
-func (avs *AppPageState) ShowPage(pageId models.PageId) error {
+func (avs *AppPageState) ShowPage(pageId models.PageId) (tea.Cmd, error) {
 	page, exists := avs.pages[pageId]
 	if !exists || page == nil {
-		return fmt.Errorf("page with id %s not found", pageId)
+		return nil, fmt.Errorf("page with id %s not found", pageId)
 	}
 
 	avs.currentPageId = pageId
 
-	page.InitOnce()
-
-	return nil
+	return page.InitOnce(), nil
 }

@@ -118,11 +118,17 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				switch cap.focusIndex {
 				case nextFocusIndex:
 					if cap.connected {
-						cap.appPageState.NextPage()
+						if cmd, err := cap.appPageState.NextPage(); err == nil {
+							return cap, cmd
+						}
 					}
+
 					return cap, nil
 				case prevFocusIndex:
-					cap.appPageState.PrevPage()
+					if cmd, err := cap.appPageState.PrevPage(); err == nil {
+						return cap, cmd
+					}
+
 					return cap, nil
 				}
 			}
@@ -130,10 +136,13 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return cap, nil
 		}
 	case ChallengeIdMsg:
+		cap.appAuthState.SetAPIAddress(msg.Address)
 		cap.currentSubView = codeView
 		var m tea.Model
 		m, cmd = cap.challengeCode.Update(msg)
 		cap.challengeCode = m.(*CodeModel)
+
+		return cap, cmd
 	case ApiKeyMsg:
 		cap.appAuthState.SetAPIKey(msg.ApiKey)
 		cap.connected = true

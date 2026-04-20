@@ -69,6 +69,8 @@ func (m *MethodPage) Init() tea.Cmd {
 }
 
 func (m *MethodPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	cmds := make([]tea.Cmd, 0)
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.list.SetSize(msg.Width, msg.Height)
@@ -76,15 +78,18 @@ func (m *MethodPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch keyPress := msg.String(); keyPress {
 		case "enter":
 			if i, ok := m.list.SelectedItem().(item); ok {
-				m.appPageState.ShowPage(i.pageId)
+				if cmd, err := m.appPageState.ShowPage(i.pageId); err != nil {
+					cmds = append(cmds, cmd)
+				}
 			}
 		}
 	}
 
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
+	cmds = append(cmds, cmd)
 
-	return m, cmd
+	return m, tea.Batch(cmds...)
 }
 
 func (m *MethodPage) View() tea.View {

@@ -91,10 +91,16 @@ func (a *ApiKeyAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if a.focusedIndex == 2 {
 				return a, a.connect()
 			} else if a.focusedIndex == 3 && a.CanProceed() {
-				a.appPageState.NextPage()
+				if cmd, err := a.appPageState.NextPage(); err == nil {
+					return a, cmd
+				}
+
 				return a, nil
 			} else if a.focusedIndex == 4 {
-				a.appPageState.PrevPage()
+				if cmd, err := a.appPageState.PrevPage(); err == nil {
+					return a, cmd
+				}
+
 				return a, nil
 			}
 		}
