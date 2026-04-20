@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 
+	"charm.land/bubbles/v2/key"
 	bubblesList "charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -148,9 +149,11 @@ type MultiSelectModel struct {
 	bubblesList.Model
 
 	multiSelectDelegate *MultiSelectDelegate
+
+	selectionKey key.Binding
 }
 
-func NewMultiSelect(items []bubblesList.DefaultItem, width, height int) (*MultiSelectModel, error) {
+func NewMultiSelect(items []bubblesList.DefaultItem, width, height int, selectionKey key.Binding) (*MultiSelectModel, error) {
 	d := NewMultiSelectDelegate()
 
 	multiSelectItems := make([]bubblesList.Item, len(items))
@@ -166,6 +169,7 @@ func NewMultiSelect(items []bubblesList.DefaultItem, width, height int) (*MultiS
 	return &MultiSelectModel{
 		Model:               bubblesList.New(multiSelectItems, d, width, height),
 		multiSelectDelegate: d,
+		selectionKey:        selectionKey,
 	}, nil
 }
 
@@ -196,8 +200,7 @@ func (m *MultiSelectModel) Update(msg tea.Msg) (*MultiSelectModel, tea.Cmd) {
 
 	switch msgT := msg.(type) {
 	case tea.KeyPressMsg:
-		switch msgT.Code {
-		case tea.KeySpace:
+		if key.Matches(msgT.Key(), m.selectionKey) {
 			if m.FilterState() != bubblesList.Filtering {
 				m.ToggleSelection()
 				return m, nil

@@ -35,7 +35,7 @@ func main() {
 	apiKeyAuthPage.SetPrevPage(authMethodPage.ID())
 	challengeAuthPage.SetPrevPage(authMethodPage.ID())
 
-	spacesListPage, err := spaces.NewSpacesModel(appState, windowState)
+	spacesListPage, err := spaces.NewSpacesModel(appState, pageState, windowState)
 	if err != nil {
 		log.Panicln(err)
 	}

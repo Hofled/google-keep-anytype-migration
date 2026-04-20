@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"charm.land/bubbles/v2/key"
 	bubblesList "charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype/rest"
@@ -13,14 +14,22 @@ import (
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/widgets/list"
 )
 
-type SpacesPageModel struct {
-	*models.ModelInitOnce
-	*models.PageIds
+type spacesListKeyMap struct {
+	toggleSelection key.Binding
+	confirmSpaces   key.Binding
+}
 
-	authState   state.AppAuthStater
-	windowState state.AppWindowStater
-
-	spacesList *list.MultiSelectModel
+func newSpacesListKeyMap() *spacesListKeyMap {
+	return &spacesListKeyMap{
+		toggleSelection: key.NewBinding(
+			key.WithKeys("space"),
+			key.WithHelp("␣/space", "toggle selection"),
+		),
+		confirmSpaces: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("↵/enter", "confirm selected"),
+		),
+	}
 }
 
 type spaceListItem struct {
@@ -53,7 +62,20 @@ func (slm *spaceListItem) Description() string {
 	}
 }
 
-func NewSpacesModel(authState state.AppAuthStater, windowState state.AppWindowStater) (*SpacesPageModel, error) {
+type SpacesPageModel struct {
+	*models.ModelInitOnce
+	*models.PageIds
+
+	authState   state.AppAuthStater
+	pageState   state.AppPageStater
+	windowState state.AppWindowStater
+
+	keyMap *spacesListKeyMap
+
+	spacesList *list.MultiSelectModel
+}
+
+func NewSpacesModel(authState state.AppAuthStater, pageState state.AppPageStater, windowState state.AppWindowStater) (*SpacesPageModel, error) {
 	pageIds, err := models.NewPageIds()
 	if err != nil {
 		return nil, err
@@ -62,7 +84,9 @@ func NewSpacesModel(authState state.AppAuthStater, windowState state.AppWindowSt
 	spacesPageModel := &SpacesPageModel{
 		PageIds:     pageIds,
 		authState:   authState,
+		pageState:   pageState,
 		windowState: windowState,
+		keyMap:      newSpacesListKeyMap(),
 	}
 
 	spacesPageModel.ModelInitOnce = models.NewModelInitOnce(spacesPageModel)
@@ -94,40 +118,60 @@ func (sm *SpacesPageModel) Init() tea.Cmd {
 }
 
 func (sm *SpacesPageModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
+	cmds := make([]tea.Cmd, 0)
 
 	switch msgT := msg.(type) {
 	case spacesListMsg:
-		newSpacesList, err := constructSpacesList(msgT, sm.windowState.GetWindowWidth(), sm.windowState.GetWindowHeight())
+		newSpacesList, err := constructSpacesList(msgT, sm.windowState.GetWindowWidth(), sm.windowState.GetWindowHeight(), sm.keyMap)
 		if err != nil {
 			return sm, nil
 		}
 
 		sm.spacesList = newSpacesList
 		return sm, nil
+	case tea.KeyPressMsg:
+		if key.Matches(msgT.Key(), sm.keyMap.confirmSpaces) {
+			if cmd, err := sm.pageState.NextPage(); err != nil {
+				cmds = append(cmds, cmd)
+			}
+		}
 	}
 
+	var cmd tea.Cmd
 	sm.spacesList, cmd = sm.spacesList.Update(msg)
+	cmds = append(cmds, cmd)
 
-	return sm, cmd
+	return sm, tea.Batch(cmds...)
 }
 
 const spacesListTitle = "Choose Spaces For Import:"
 
-func constructSpacesList(msg spacesListMsg, w, h int) (*list.MultiSelectModel, error) {
+func constructSpacesList(msg spacesListMsg, w, h int, keyMap *spacesListKeyMap) (*list.MultiSelectModel, error) {
 	spaces := make([]bubblesList.DefaultItem, len(msg.list))
 
 	for i, space := range msg.list {
 		spaces[i] = &spaceListItem{space}
 	}
 
-	spacesMultiSelect, err := list.NewMultiSelect(spaces, w, h)
+	spacesMultiSelect, err := list.NewMultiSelect(spaces, w, h, keyMap.toggleSelection)
 	if err != nil {
 		return nil, err
 	}
 
+	keyBindings := []key.Binding{
+		keyMap.toggleSelection,
+		keyMap.confirmSpaces,
+	}
+
 	spacesMultiSelect.Title = spacesListTitle
 	spacesMultiSelect.DisableQuitKeybindings()
+	spacesMultiSelect.AdditionalShortHelpKeys = func() []key.Binding {
+		return keyBindings
+	}
+	spacesMultiSelect.AdditionalFullHelpKeys = func() []key.Binding {
+		return keyBindings
+	}
+
 	return spacesMultiSelect, nil
 }
 
