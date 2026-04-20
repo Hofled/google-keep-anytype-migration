@@ -24,7 +24,7 @@ type SpaceIcon struct {
 }
 
 type ListSpacesResponse struct {
-	Data []Space `json:"data"`
+	Data []*Space `json:"data"`
 }
 
 const listSpacesEndpoint = "spaces"
