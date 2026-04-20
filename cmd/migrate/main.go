@@ -9,11 +9,13 @@ import (
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages/auth"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages/auth/challenge"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages/spaces"
 )
 
 func main() {
 	appState := &state.AppState{}
 	pageState := state.NewAppPageState()
+	windowState := state.NewAppWindowState()
 
 	apiKeyAuthPage, err := auth.NewApiKeyAuthPage(appState, pageState) // TODO refactor to lazy page construction
 	if err != nil {
@@ -33,11 +35,20 @@ func main() {
 	apiKeyAuthPage.SetPrevPage(authMethodPage.ID())
 	challengeAuthPage.SetPrevPage(authMethodPage.ID())
 
-	pageState.AddPages(authMethodPage, apiKeyAuthPage, challengeAuthPage)
+	spacesListPage, err := spaces.NewSpacesModel(appState, windowState)
+	if err != nil {
+		log.Panicln(err)
+	}
+	spacesListPage.SetPrevPage(authMethodPage.ID())
 
-	pageState.ShowPage(authMethodPage.ID())
+	apiKeyAuthPage.SetNextPage(spacesListPage.ID())
+	challengeAuthPage.SetNextPage(spacesListPage.ID())
 
-	tuiApp := app.NewApp(appState, pageState)
+	pageState.AddPages(authMethodPage, apiKeyAuthPage, challengeAuthPage, spacesListPage)
+
+	pageState.SetCurrentPage(authMethodPage.ID())
+
+	tuiApp := app.NewApp(appState, pageState, windowState)
 
 	p := tea.NewProgram(tuiApp)
 	if _, err := p.Run(); err != nil {

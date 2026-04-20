@@ -7,15 +7,17 @@ import (
 
 // App manages the overall TUI application state and page navigation.
 type App struct {
-	state     *state.AppState
-	pageState state.AppPageStater
+	state       *state.AppState
+	pageState   state.AppPageStater
+	windowState state.AppWindowStater
 }
 
 // NewApp creates a new TUI application with the given pages.
-func NewApp(state *state.AppState, viewState *state.AppPageState) *App {
+func NewApp(state *state.AppState, viewState state.AppPageStater, windowState state.AppWindowStater) *App {
 	return &App{
-		state:     state,
-		pageState: viewState,
+		state:       state,
+		pageState:   viewState,
+		windowState: windowState,
 	}
 }
 
@@ -36,6 +38,10 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return a, tea.Quit
 		}
+
+	case tea.WindowSizeMsg:
+		a.windowState.SetWindowWidth(msg.Width)
+		a.windowState.SetWindowHeight(msg.Height)
 	}
 
 	// Update the current page
