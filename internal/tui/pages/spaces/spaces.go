@@ -147,9 +147,9 @@ func (sm *SpacesPageModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					cmds = append(cmds, cmd)
 				}
 			} else if key.Matches(k, sm.keyMap.selectAll) {
-				sm.spacesList.SetAll(true)
+				sm.spacesList.SetAllVisible(true)
 			} else if key.Matches(k, sm.keyMap.deselectAll) {
-				sm.spacesList.SetAll(false)
+				sm.spacesList.SetAllVisible(false)
 			}
 		}
 	}
