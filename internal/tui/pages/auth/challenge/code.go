@@ -112,7 +112,7 @@ func (cm *CodeModel) createApiKey() tea.Cmd {
 	return func() tea.Msg {
 		apiKeyRes, err := restClient.CreateApiKey(context.Background(), cm.challengeId, cm.codeInput.Value())
 		if err != nil {
-			// TODO
+			// TODO reflect error in component
 			return nil
 		}
 
