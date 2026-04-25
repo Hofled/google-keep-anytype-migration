@@ -76,27 +76,29 @@ type SpacesPageModel struct {
 	*models.ModelInitOnce
 	*models.PageIds
 
-	authState   state.AppAuthStater
-	pageState   state.AppPageStater
-	windowState state.AppWindowStater
+	authState         state.AppAuthStater
+	pageState         state.AppPageStater
+	windowState       state.AppWindowStater
+	importSpacesState state.ImportSpacesStater
 
 	keyMap *spacesListKeyMap
 
 	spacesList *list.MultiSelectModel
 }
 
-func NewSpacesModel(authState state.AppAuthStater, pageState state.AppPageStater, windowState state.AppWindowStater) (*SpacesPageModel, error) {
+func NewSpacesModel(authState state.AppAuthStater, pageState state.AppPageStater, windowState state.AppWindowStater, importSpacesState state.ImportSpacesStater) (*SpacesPageModel, error) {
 	pageIds, err := models.NewPageIds()
 	if err != nil {
 		return nil, err
 	}
 
 	spacesPageModel := &SpacesPageModel{
-		PageIds:     pageIds,
-		authState:   authState,
-		pageState:   pageState,
-		windowState: windowState,
-		keyMap:      newSpacesListKeyMap(),
+		PageIds:           pageIds,
+		authState:         authState,
+		pageState:         pageState,
+		windowState:       windowState,
+		importSpacesState: importSpacesState,
+		keyMap:            newSpacesListKeyMap(),
 	}
 
 	spacesPageModel.ModelInitOnce = models.NewModelInitOnce(spacesPageModel)
@@ -144,7 +146,16 @@ func (sm *SpacesPageModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			k := msgT.Key()
 			if key.Matches(k, sm.keyMap.confirmSpaces) {
 				if cmd, err := sm.pageState.NextPage(); err != nil {
-					cmds = append(cmds, cmd)
+					selectedItems := sm.spacesList.SelectedItems()
+					selectedSpaces := make([]*rest.Space, len(selectedItems))
+					for _, selectedItem := range selectedItems {
+						if spaceListItem, ok := selectedItem.(*spaceListItem); ok {
+							selectedSpaces = append(selectedSpaces, spaceListItem.space)
+						}
+					}
+
+					sm.importSpacesState.SetSelectedSpaces(selectedSpaces)
+					return sm, cmd
 				}
 			} else if key.Matches(k, sm.keyMap.selectAll) {
 				sm.spacesList.SetAllVisible(true)

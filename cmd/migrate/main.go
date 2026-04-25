@@ -16,6 +16,7 @@ func main() {
 	authState := &state.AppAuthState{}
 	pageState := state.NewAppPageState()
 	windowState := state.NewAppWindowState()
+	importSpacesState := &state.ImportSpacesState{}
 
 	apiKeyAuthPage, err := auth.NewApiKeyAuthPage(authState, pageState) // TODO refactor to lazy page construction
 	if err != nil {
@@ -35,7 +36,7 @@ func main() {
 	apiKeyAuthPage.SetPrevPage(authMethodPage.ID())
 	challengeAuthPage.SetPrevPage(authMethodPage.ID())
 
-	spacesListPage, err := spaces.NewSpacesModel(authState, pageState, windowState)
+	spacesListPage, err := spaces.NewSpacesModel(authState, pageState, windowState, importSpacesState)
 	if err != nil {
 		log.Panicln(err)
 	}
