@@ -8,11 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// AppState holds the global state of the TUI application.
-type AppState struct {
-	AppAuthState
-}
-
 type AppPageState struct {
 	pages         map[models.PageId]models.Page
 	currentPageId models.PageId

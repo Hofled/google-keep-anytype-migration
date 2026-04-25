@@ -13,16 +13,16 @@ import (
 )
 
 func main() {
-	appState := &state.AppState{}
+	authState := &state.AppAuthState{}
 	pageState := state.NewAppPageState()
 	windowState := state.NewAppWindowState()
 
-	apiKeyAuthPage, err := auth.NewApiKeyAuthPage(appState, pageState) // TODO refactor to lazy page construction
+	apiKeyAuthPage, err := auth.NewApiKeyAuthPage(authState, pageState) // TODO refactor to lazy page construction
 	if err != nil {
 		log.Panicln(err)
 	}
 
-	challengeAuthPage, err := challenge.NewChallengeAuthPage(appState, pageState)
+	challengeAuthPage, err := challenge.NewChallengeAuthPage(authState, pageState)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -35,7 +35,7 @@ func main() {
 	apiKeyAuthPage.SetPrevPage(authMethodPage.ID())
 	challengeAuthPage.SetPrevPage(authMethodPage.ID())
 
-	spacesListPage, err := spaces.NewSpacesModel(appState, pageState, windowState)
+	spacesListPage, err := spaces.NewSpacesModel(authState, pageState, windowState)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -48,7 +48,7 @@ func main() {
 
 	pageState.SetCurrentPage(authMethodPage.ID())
 
-	tuiApp := app.NewApp(appState, pageState, windowState)
+	tuiApp := app.NewApp(authState, pageState, windowState)
 
 	p := tea.NewProgram(tuiApp)
 	if _, err := p.Run(); err != nil {
