@@ -15,7 +15,6 @@ import (
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
-	_ "github.com/epheo/anytype-go/client"
 )
 
 var (

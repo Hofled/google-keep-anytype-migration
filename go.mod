@@ -7,7 +7,6 @@ require (
 	charm.land/bubbletea/v2 v2.0.2
 	charm.land/lipgloss/v2 v2.0.2
 	github.com/charmbracelet/x/ansi v0.11.6
-	github.com/epheo/anytype-go v0.53.1
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.11.1
 )
