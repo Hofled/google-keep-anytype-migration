@@ -7,15 +7,15 @@ import (
 
 // App manages the overall TUI application state and page navigation.
 type App struct {
-	state       *state.AppState
+	authState   state.AppAuthStater
 	pageState   state.AppPageStater
 	windowState state.AppWindowStater
 }
 
 // NewApp creates a new TUI application with the given pages.
-func NewApp(state *state.AppState, viewState state.AppPageStater, windowState state.AppWindowStater) *App {
+func NewApp(authState state.AppAuthStater, viewState state.AppPageStater, windowState state.AppWindowStater) *App {
 	return &App{
-		state:       state,
+		authState:   authState,
 		pageState:   viewState,
 		windowState: windowState,
 	}
