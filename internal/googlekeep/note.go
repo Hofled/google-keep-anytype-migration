@@ -6,7 +6,7 @@ type Note struct {
 	IsPinned                bool          `json:"isPinned"`
 	IsArchived              bool          `json:"isArchived"`
 	Annotations             []Annotations `json:"annotations,omitempty"`
-	TextContent             string        `json:"textContent"`
+	TextContent             string        `json:"textContent,omitempty"`
 	Title                   string        `json:"title"`
 	UserEditedTimestampUsec uint64        `json:"userEditedTimestampUsec"`
 	CreatedTimestampUsec    uint64        `json:"createdTimestampUsec"`
