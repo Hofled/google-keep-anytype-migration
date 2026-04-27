@@ -12,7 +12,7 @@ import (
 func GoogleNoteToCreatePageRequest(note googlekeep.Note) rest.CreateObjectRequest {
 	title := note.Title
 	if len(title) == 0 {
-		title = time.UnixMicro(int64(note.CreatedTimestampUsec)).UTC().Format(time.RFC822)
+		title = time.UnixMicro(int64(note.CreatedTimestampUsec)).Format(time.RFC822)
 	}
 
 	body := note.TextContent
