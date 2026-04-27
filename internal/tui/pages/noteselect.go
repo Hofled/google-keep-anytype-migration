@@ -75,7 +75,7 @@ func NewNoteSelectModel(pageState state.AppPageStater, windowState state.AppWind
 func (nsm *NoteSelectModel) Init() tea.Cmd {
 	nsm.picker.SetHeight(nsm.windowState.GetWindowHeight() - 5)
 
-	return nsm.picker.Init()
+	return tea.Batch(nsm.picker.Init(), nsm.spinner.Tick)
 }
 
 func (nsm *NoteSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -90,6 +90,9 @@ func (nsm *NoteSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case selectedDirErrMsg:
 		nsm.selectedDirErr = msg.err
+	case spinner.TickMsg:
+		nsm.spinner, cmd = nsm.spinner.Update(msg)
+		return nsm, cmd
 	}
 
 	nsm.picker, cmd = nsm.picker.Update(msg)
