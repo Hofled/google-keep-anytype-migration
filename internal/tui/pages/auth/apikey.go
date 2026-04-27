@@ -216,6 +216,8 @@ func (a *ApiKeyAuthPage) connect() tea.Cmd {
 		a.setClientOnce.Do(func() {
 			a.connected.Store(true)
 			a.appAuthState.SetClient(client)
+			a.appAuthState.SetAPIAddress(a.addrInput.Value())
+			a.appAuthState.SetAPIKey(a.keyInput.Value())
 		})
 
 		return authResultMsg{success: true, err: nil}
