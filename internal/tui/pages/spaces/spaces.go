@@ -113,12 +113,10 @@ type spacesListMsg struct {
 
 func (sm *SpacesPageModel) Init() tea.Cmd {
 	return func() tea.Msg {
-		client, err := rest.NewClient(sm.authState.GetAPIAddress())
-		if err != nil || client == nil {
+		client := sm.authState.GetClient()
+		if client == nil {
 			return nil
 		}
-
-		client.SetApiKey(sm.authState.GetAPIKey())
 
 		spacesList, err := client.ListSpaces(context.Background())
 		if err != nil {
@@ -130,31 +128,41 @@ func (sm *SpacesPageModel) Init() tea.Cmd {
 }
 
 func (sm *SpacesPageModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	cmds := make([]tea.Cmd, 0)
-
-	switch msgT := msg.(type) {
-	case spacesListMsg:
-		newSpacesList, err := constructSpacesList(msgT, sm.windowState.GetWindowWidth(), sm.windowState.GetWindowHeight(), sm.keyMap)
+	if msg, ok := msg.(spacesListMsg); ok {
+		newSpacesList, err := constructSpacesList(msg, sm.windowState.GetWindowWidth(), sm.windowState.GetWindowHeight(), sm.keyMap)
 		if err != nil {
 			return sm, nil
 		}
 
 		sm.spacesList = newSpacesList
 		return sm, nil
+	}
+
+	if sm.spacesList == nil {
+		return sm, nil
+	}
+
+	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		if sm.spacesList.FilterState() != bubblesList.Filtering {
-			k := msgT.Key()
+			k := msg.Key()
 			if key.Matches(k, sm.keyMap.confirmSpaces) {
-				if cmd, err := sm.pageState.NextPage(); err != nil {
-					selectedItems := sm.spacesList.SelectedItems()
-					selectedSpaces := make([]*rest.Space, len(selectedItems))
-					for _, selectedItem := range selectedItems {
-						if spaceListItem, ok := selectedItem.(*spaceListItem); ok {
-							selectedSpaces = append(selectedSpaces, spaceListItem.space)
-						}
-					}
+				selectedItems := sm.spacesList.SelectedItems()
 
-					sm.importSpacesState.SetSelectedSpaces(selectedSpaces)
+				if len(selectedItems) == 0 {
+					return sm, nil
+				}
+
+				selectedSpaces := make([]*rest.Space, 0, len(selectedItems))
+				for _, selectedItem := range selectedItems {
+					if spaceListItem, ok := selectedItem.(*spaceListItem); ok {
+						selectedSpaces = append(selectedSpaces, spaceListItem.space)
+					}
+				}
+
+				sm.importSpacesState.SetSelectedSpaces(selectedSpaces)
+
+				if cmd, err := sm.pageState.NextPage(); err == nil {
 					return sm, cmd
 				}
 			} else if key.Matches(k, sm.keyMap.selectAll) {
@@ -167,9 +175,8 @@ func (sm *SpacesPageModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	sm.spacesList, cmd = sm.spacesList.Update(msg)
-	cmds = append(cmds, cmd)
 
-	return sm, tea.Batch(cmds...)
+	return sm, cmd
 }
 
 const spacesListTitle = "Choose Spaces For Import:"
