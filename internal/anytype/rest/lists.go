@@ -38,7 +38,7 @@ func (c *Client) AddObjectsToList(ctx context.Context, spaceId, listId string, o
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		return &InvalidResponseErr{statusCode: resp.StatusCode, body: string(body)}
 	}
