@@ -7,6 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/app"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages/auth"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages/auth/challenge"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/pages/spaces"
@@ -17,6 +18,7 @@ func main() {
 	pageState := state.NewAppPageState()
 	windowState := state.NewAppWindowState()
 	importSpacesState := &state.ImportSpacesState{}
+	notesState := &state.NotesState{}
 
 	apiKeyAuthPage, err := auth.NewApiKeyAuthPage(authState, pageState) // TODO refactor to lazy page construction
 	if err != nil {
@@ -45,7 +47,23 @@ func main() {
 	apiKeyAuthPage.SetNextPage(spacesListPage.ID())
 	challengeAuthPage.SetNextPage(spacesListPage.ID())
 
-	pageState.AddPages(authMethodPage, apiKeyAuthPage, challengeAuthPage, spacesListPage)
+	notesSelectPage, err := pages.NewNoteSelectModel(pageState, windowState, notesState)
+	if err != nil {
+		log.Panicln(err)
+	}
+	notesSelectPage.SetPrevPage(spacesListPage.ID())
+
+	spacesListPage.SetNextPage(notesSelectPage.ID())
+
+	migrationPage, err := pages.NewMigrationPageModel(authState, importSpacesState, notesState)
+	if err != nil {
+		log.Panicln(err)
+	}
+	migrationPage.SetPrevPage(notesSelectPage.ID())
+
+	notesSelectPage.SetNextPage(migrationPage.ID())
+
+	pageState.AddPages(authMethodPage, apiKeyAuthPage, challengeAuthPage, spacesListPage, notesSelectPage, migrationPage)
 
 	pageState.SetCurrentPage(authMethodPage.ID())
 

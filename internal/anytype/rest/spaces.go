@@ -3,24 +3,20 @@ package rest
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
+
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype"
 )
 
 type Space struct {
-	Description string    `json:"description"`
-	GatewayUrl  string    `json:"gateway_url"`
-	Icon        SpaceIcon `json:"icon"`
-	Id          string    `json:"id"`
-	Name        string    `json:"name"`
-	NetworkId   string    `json:"network_id"`
-	Object      string    `json:"object"`
-}
-
-type SpaceIcon struct {
-	Emoji  string `json:"emoji,omitempty"`
-	Icon   string `json:"icon,omitempty"`
-	File   string `json:"file,omitempty"`
-	Format string `json:"format"`
+	Description string       `json:"description"`
+	GatewayUrl  string       `json:"gateway_url"`
+	Icon        anytype.Icon `json:"icon"`
+	Id          string       `json:"id"`
+	Name        string       `json:"name"`
+	NetworkId   string       `json:"network_id"`
+	Object      string       `json:"object"`
 }
 
 type ListSpacesResponse struct {
@@ -41,7 +37,8 @@ func (c *Client) ListSpaces(ctx context.Context) (*ListSpacesResponse, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, &InvalidResponseErr{resp}
+		body, _ := io.ReadAll(resp.Body)
+		return nil, &InvalidResponseErr{statusCode: resp.StatusCode, body: string(body)}
 	}
 
 	var listSpacesResp ListSpacesResponse

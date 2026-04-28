@@ -7,7 +7,6 @@ require (
 	charm.land/bubbletea/v2 v2.0.2
 	charm.land/lipgloss/v2 v2.0.2
 	github.com/charmbracelet/x/ansi v0.11.6
-	github.com/epheo/anytype-go v0.53.1
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.11.1
 )
@@ -22,6 +21,7 @@ require (
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
 	github.com/mattn/go-runewidth v0.0.21 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
