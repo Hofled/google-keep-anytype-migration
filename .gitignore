@@ -1,2 +1,5 @@
-.github/
+!.github/
+.github/*
+!.github/workflows/
+
 .vscode/
