@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/consts"
@@ -42,7 +43,8 @@ func (c *Client) CreateChallenge(ctx context.Context) (*ChallengeResponse, error
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
-		return nil, &InvalidResponseErr{resp}
+		body, _ := io.ReadAll(resp.Body)
+		return nil, &InvalidResponseErr{statusCode: resp.StatusCode, body: string(body)}
 	}
 
 	var challengeResp ChallengeResponse
@@ -88,7 +90,8 @@ func (c *Client) CreateApiKey(ctx context.Context, challengeId, code string) (*C
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
-		return nil, &InvalidResponseErr{resp}
+		body, _ := io.ReadAll(resp.Body)
+		return nil, &InvalidResponseErr{statusCode: resp.StatusCode, body: string(body)}
 	}
 
 	var apiKeyResp CreateApiKeyResponse

@@ -66,9 +66,10 @@ func (c *Client) newRequest(ctx context.Context, method, apiPath string, bodyRea
 }
 
 type InvalidResponseErr struct {
-	Resp *http.Response
+	statusCode int
+	body       string
 }
 
 func (ire InvalidResponseErr) Error() string {
-	return fmt.Sprintf("invalid response: %s", ire.Resp.Status)
+	return fmt.Sprintf("invalid response: [%d] %s", ire.statusCode, ire.body)
 }

@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype"
@@ -36,7 +37,8 @@ func (c *Client) ListSpaces(ctx context.Context) (*ListSpacesResponse, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, &InvalidResponseErr{resp}
+		body, _ := io.ReadAll(resp.Body)
+		return nil, &InvalidResponseErr{statusCode: resp.StatusCode, body: string(body)}
 	}
 
 	var listSpacesResp ListSpacesResponse

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -126,7 +127,8 @@ func (c *Client) CreateObject(ctx context.Context, spaceId string, createObjReq 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
-		return nil, &InvalidResponseErr{resp}
+		body, _ := io.ReadAll(resp.Body)
+		return nil, &InvalidResponseErr{statusCode: resp.StatusCode, body: string(body)}
 	}
 
 	var createdObjResp CreatedObjectResponse
