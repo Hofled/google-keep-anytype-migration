@@ -6,7 +6,7 @@ type PropertyLinkWithValue struct {
 	Text        string   `json:"text,omitempty"`
 	Number      float64  `json:"number,omitempty"`
 	Checkbox    bool     `json:"checkbox,omitempty"`
-	Date        int64    `json:"date,omitempty"`
+	Date        string   `json:"date,omitempty"`
 	Select      string   `json:"select,omitempty"`
 	MultiSelect []string `json:"multi_select,omitempty"`
 	URL         string   `json:"url,omitempty"`
@@ -35,7 +35,7 @@ func NewCheckboxProperty(key string, value bool) PropertyLinkWithValue {
 	}
 }
 
-func NewDateProperty(key string, timestamp int64) PropertyLinkWithValue {
+func NewDateProperty(key string, timestamp string) PropertyLinkWithValue {
 	return PropertyLinkWithValue{
 		Key:  key,
 		Date: timestamp,

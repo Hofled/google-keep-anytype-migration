@@ -13,4 +13,6 @@ type Icon struct {
 	Icon   string     `json:"icon,omitempty"`
 	File   string     `json:"file,omitempty"`
 	Format IconFormat `json:"format,omitempty"`
+	Name   string     `json:"name,omitempty"`
+	Color  string     `json:"color,omitempty"`
 }
