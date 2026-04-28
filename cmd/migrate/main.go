@@ -55,7 +55,15 @@ func main() {
 
 	spacesListPage.SetNextPage(notesSelectPage.ID())
 
-	pageState.AddPages(authMethodPage, apiKeyAuthPage, challengeAuthPage, spacesListPage, notesSelectPage)
+	migrationPage, err := pages.NewMigrationPageModel(authState, importSpacesState, notesState)
+	if err != nil {
+		log.Panicln(err)
+	}
+	migrationPage.SetPrevPage(notesSelectPage.ID())
+
+	notesSelectPage.SetNextPage(migrationPage.ID())
+
+	pageState.AddPages(authMethodPage, apiKeyAuthPage, challengeAuthPage, spacesListPage, notesSelectPage, migrationPage)
 
 	pageState.SetCurrentPage(authMethodPage.ID())
 
