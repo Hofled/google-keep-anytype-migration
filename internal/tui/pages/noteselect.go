@@ -12,14 +12,10 @@ import (
 	"charm.land/bubbles/v2/filepicker"
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/googlekeep"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
-)
-
-var (
-	errStyle = lipgloss.NewStyle().Foreground(lipgloss.Red)
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
 )
 
 type parsedNotesMsg struct {
@@ -141,7 +137,7 @@ func (nsm *NoteSelectModel) View() tea.View {
 	}
 
 	if nsm.selectedDirErr != nil {
-		b.WriteString(errStyle.Render(nsm.selectedDirErr.Error()))
+		b.WriteString(styles.ErrText.Render(nsm.selectedDirErr.Error()))
 	}
 
 	v := tea.NewView(b.String())
