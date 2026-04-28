@@ -7,11 +7,11 @@ The migration relies on the data format from using the [Google Takeout](https://
 - The Google Keep exported data does not preserve tickbox (checkbox) indentations, meaning lists appear flat.
 
 ## Roadmap
-- [ ] Migration using [Anytype API](https://developers.anytype.io/docs/reference/2025-11-08/anytype-api/), Google Keep Note ➡️ Anytype Page
-    - [ ] Only text content
-    - [ ] Checkbox list formatting
+- [x] Migration using [Anytype API](https://developers.anytype.io/docs/reference/2025-11-08/anytype-api/), Google Keep Note ➡️ Anytype Page
+    - [x] Only text content
+    - [ ] Checkbox list indentation formatting
     - [ ] Note annotations ➡️ Anytype Bookmarks
     - [ ] Google Keep Labels ➡️ Anytype Tags
     - [ ] All text formatting
     - [ ] Include images once the [file uploading API](https://github.com/anyproto/anytype-heart/pull/2843) is supported
-- [ ] TUI support
+- [x] TUI support
