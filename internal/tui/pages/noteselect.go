@@ -26,6 +26,10 @@ type parsedNotesMsg struct {
 	notes []googlekeep.Note
 }
 
+type migrateNotesMsg struct {
+	notes []googlekeep.Note
+}
+
 type selectedDirErrMsg struct {
 	err error
 }
@@ -86,7 +90,9 @@ func (nsm *NoteSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		nsm.notesState.SetParsedNotes(msg.notes)
 		var err error
 		if cmd, err = nsm.pageState.NextPage(); err == nil {
-			return nsm, cmd
+			return nsm, tea.Sequence(cmd, func() tea.Msg {
+				return migrateNotesMsg{msg.notes}
+			})
 		}
 	case selectedDirErrMsg:
 		nsm.selectedDirErr = msg.err
