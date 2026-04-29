@@ -9,10 +9,18 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype/rest"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/widgets"
+)
+
+const (
+	codeInputFocusIndex = iota
+	connectButtFocusIndex
 )
 
 type CodeModel struct {
 	*models.ModelInitOnce
+	widgets.FocusableWidget
 
 	codeInput textinput.Model
 
@@ -54,7 +62,7 @@ func (cm *CodeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "enter":
 			switch cm.focusIndex {
-			case 1:
+			case connectButtFocusIndex:
 				return cm, cm.createApiKey()
 			}
 		}
@@ -64,7 +72,7 @@ func (cm *CodeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch cm.focusIndex {
-	case 0:
+	case codeInputFocusIndex:
 		cm.codeInput, cmd = cm.codeInput.Update(msg)
 	}
 
@@ -74,15 +82,13 @@ func (cm *CodeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (cm *CodeModel) View() tea.View {
 	var b strings.Builder
 
-	b.WriteString(fmt.Sprintf("Challenge Code: %s\n", cm.codeInput.View()))
+	fmt.Fprintf(&b, "Challenge Code: %s\n\n", cm.codeInput.View())
 
-	b.WriteString("\n")
-
-	connectLabel := "Connect"
-	if cm.focusIndex == 1 {
-		connectLabel = fmt.Sprintf("[%s]", connectLabel)
+	connectButtonStyle := styles.ButtonStyle
+	if cm.Focused() && cm.focusIndex == connectButtFocusIndex {
+		connectButtonStyle = styles.SelectedButton(connectButtonStyle)
 	}
-	b.WriteString(fmt.Sprintf("%s\n", connectLabel))
+	fmt.Fprintf(&b, "%s\n", connectButtonStyle.Render("Connect"))
 
 	return tea.NewView(b.String())
 }
@@ -98,7 +104,7 @@ func (cm *CodeModel) handleNavigation(key string) {
 	cm.codeInput.Blur()
 
 	switch cm.focusIndex {
-	case 0:
+	case codeInputFocusIndex:
 		cm.codeInput.Focus()
 	}
 }

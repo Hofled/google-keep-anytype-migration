@@ -9,10 +9,18 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype/rest"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/widgets"
+)
+
+const (
+	addrInputFocusIndex = iota
+	challengeButtFocusIndex
 )
 
 type InitModel struct {
 	*models.ModelInitOnce
+	widgets.FocusableWidget
 
 	addrInput textinput.Model
 
@@ -54,14 +62,14 @@ func (im *InitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "enter":
 			switch im.focusIndex {
-			case 1:
+			case challengeButtFocusIndex:
 				return im, im.startChallenge()
 			}
 		}
 	}
 
 	switch im.focusIndex {
-	case 0:
+	case addrInputFocusIndex:
 		im.addrInput, cmd = im.addrInput.Update(msg)
 	}
 
@@ -71,15 +79,15 @@ func (im *InitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (im *InitModel) View() tea.View {
 	var b strings.Builder
 
-	b.WriteString(fmt.Sprintf("API Address: %s\n", im.addrInput.View()))
+	fmt.Fprintf(&b, "API Address: %s\n", im.addrInput.View())
 
 	b.WriteString("\n")
 
-	challengeLabel := "Challenge"
-	if im.focusIndex == 1 {
-		challengeLabel = fmt.Sprintf("[%s]", challengeLabel)
+	challengeButtonStyle := styles.ButtonStyle
+	if im.Focused() && im.focusIndex == challengeButtFocusIndex {
+		challengeButtonStyle = styles.SelectedButton(challengeButtonStyle)
 	}
-	b.WriteString(fmt.Sprintf("%s\n", challengeLabel))
+	fmt.Fprintf(&b, "%s\n", challengeButtonStyle.Render("Challenge"))
 
 	if im.createChallengeErr != nil {
 		b.WriteString("\n")
@@ -100,7 +108,7 @@ func (im *InitModel) handleNavigation(key string) {
 	im.addrInput.Blur()
 
 	switch im.focusIndex {
-	case 0:
+	case addrInputFocusIndex:
 		im.addrInput.Focus()
 	}
 }
