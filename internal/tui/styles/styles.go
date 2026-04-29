@@ -4,7 +4,7 @@ import "charm.land/lipgloss/v2"
 
 var (
 	DisabledText = lipgloss.NewStyle().Strikethrough(true).Faint(true)
-	ErrText      = lipgloss.NewStyle().Foreground(lipgloss.Red)
+	ErrText      = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
 
 	buttonBackground         = lipgloss.Color("#ff58c4")
 	buttonDisabledBackground = lipgloss.Color("#b2b2b2")
