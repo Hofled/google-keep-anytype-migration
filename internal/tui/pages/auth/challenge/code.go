@@ -84,9 +84,12 @@ func (cm *CodeModel) View() tea.View {
 
 	fmt.Fprintf(&b, "Challenge Code: %s\n\n", cm.codeInput.View())
 
-	connectButtonStyle := styles.ButtonStyle
-	if cm.Focused() && cm.focusIndex == connectButtFocusIndex {
-		connectButtonStyle = styles.SelectedButton(connectButtonStyle)
+	connectButtonStyle := styles.ButtonUnselectableStyle
+	if cm.Focused() {
+		connectButtonStyle = styles.ButtonStyle
+		if cm.focusIndex == connectButtFocusIndex {
+			connectButtonStyle = styles.SelectedButton(connectButtonStyle)
+		}
 	}
 	fmt.Fprintf(&b, "%s\n", connectButtonStyle.Render("Connect"))
 

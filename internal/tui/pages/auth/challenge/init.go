@@ -83,9 +83,13 @@ func (im *InitModel) View() tea.View {
 
 	b.WriteString("\n")
 
-	challengeButtonStyle := styles.ButtonStyle
-	if im.Focused() && im.focusIndex == challengeButtFocusIndex {
-		challengeButtonStyle = styles.SelectedButton(challengeButtonStyle)
+	challengeButtonStyle := styles.ButtonUnselectableStyle
+	if im.Focused() {
+		challengeButtonStyle = styles.ButtonStyle
+
+		if im.focusIndex == challengeButtFocusIndex {
+			challengeButtonStyle = styles.SelectedButton(challengeButtonStyle)
+		}
 	}
 	fmt.Fprintf(&b, "%s\n", challengeButtonStyle.Render("Challenge"))
 

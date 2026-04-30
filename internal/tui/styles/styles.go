@@ -6,13 +6,15 @@ var (
 	DisabledText = lipgloss.NewStyle().Strikethrough(true).Faint(true)
 	ErrText      = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
 
-	buttonBackground         = lipgloss.Color("#ff58c4")
-	buttonDisabledBackground = lipgloss.Color("#b2b2b2")
+	buttonBackground             = lipgloss.Color("#ff58c4")
+	buttonUnselectableBackground = lipgloss.Color("#b2b2b2")
 
 	baseButtonStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF7DB")).Padding(0, 3)
 
+	ButtonUnselectableStyle = baseButtonStyle.Background(buttonUnselectableBackground)
+
 	ButtonStyle         = baseButtonStyle.Background(buttonBackground)
-	ButtonDisabledStyle = baseButtonStyle.Background(buttonDisabledBackground).Strikethrough(true)
+	ButtonDisabledStyle = ButtonUnselectableStyle.Strikethrough(true)
 )
 
 func SelectedButton(buttonStyle lipgloss.Style) lipgloss.Style {
