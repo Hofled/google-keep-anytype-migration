@@ -7,6 +7,7 @@ import (
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
@@ -113,6 +114,9 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cap.handleViewFocus(pressedKey)
 
 		if !cap.subViewFocused {
+			cap.initChallenge.SetFocus(false)
+			cap.challengeCode.SetFocus(false)
+
 			cap.handleNavigation(pressedKey)
 			if pressedKey == "enter" {
 				switch cap.focusIndex {
@@ -134,6 +138,13 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			return cap, nil
+		} else {
+			switch cap.currentSubView {
+			case initView:
+				cap.initChallenge.SetFocus(true)
+			case codeView:
+				cap.challengeCode.SetFocus(true)
+			}
 		}
 	case ChallengeIdMsg:
 		cap.appAuthState.SetAPIAddress(msg.Address)
@@ -192,31 +203,36 @@ func (cap *ChallengeAuthPage) View() tea.View {
 		subView = cap.challengeCode.View().Content
 	}
 
-	b.WriteString(subView)
+	fmt.Fprintf(&b, "%s\n", subView)
 
-	prevLabel := "Prev"
+	prevButtonStyle := styles.ButtonStyle
 	if !cap.subViewFocused && cap.focusIndex == prevFocusIndex {
-		prevLabel = fmt.Sprintf("[%s]", prevLabel)
+		prevButtonStyle = styles.SelectedButton(prevButtonStyle)
 	}
-	b.WriteString(fmt.Sprintf("%s", prevLabel))
+	prevButton := prevButtonStyle.Render("Prev")
 
-	b.WriteRune(' ')
-
-	nextLabel := "Next"
-	if !cap.connected {
-		nextLabel = styles.DisabledText.Render(nextLabel)
+	nextButtonStyle := styles.ButtonDisabledStyle
+	if cap.connected {
+		nextButtonStyle = styles.ButtonStyle
 	}
-	if !cap.subViewFocused && cap.focusIndex == nextFocusIndex {
-		nextLabel = fmt.Sprintf("[%s]", nextLabel)
-	}
-	b.WriteString(fmt.Sprintf("%s", nextLabel))
 
-	b.WriteString("\n")
+	if !cap.subViewFocused {
+		if cap.focusIndex == nextFocusIndex {
+			nextButtonStyle = styles.SelectedButton(nextButtonStyle)
+		}
+	}
+	nextButton := nextButtonStyle.Render("Next")
+
+	fmt.Fprintf(&b, "%s\n", lipgloss.JoinHorizontal(lipgloss.Center, prevButton, " ", nextButton))
 
 	bString := b.String()
 
 	helpView := cap.help.View(cap.keyMapping)
-	height := 8 - strings.Count(bString, "\n") - strings.Count(helpView, "\n")
+	diff := lipgloss.Height(bString) - lipgloss.Height(helpView)
+	height := 10 - diff
+	if height < 0 {
+		height = 1
+	}
 
 	return tea.NewView(bString + strings.Repeat("\n", height) + helpView)
 }

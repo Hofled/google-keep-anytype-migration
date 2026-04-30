@@ -9,7 +9,6 @@ import (
 
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype/rest"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
@@ -17,8 +16,12 @@ import (
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
 )
 
-var (
-	authErrStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+const (
+	addrInputFocusIndex = iota
+	keyInputFocusIndex
+	connectButtFocusIndex
+	nextButtonFocusIndex
+	prevButtonFocusIndex
 )
 
 type ApiKeyAuthPage struct {
@@ -113,9 +116,9 @@ func (a *ApiKeyAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch a.focusedIndex {
-	case 0:
+	case addrInputFocusIndex:
 		a.addrInput, cmd = a.addrInput.Update(msg)
-	case 1:
+	case keyInputFocusIndex:
 		a.keyInput, cmd = a.keyInput.Update(msg)
 	}
 
@@ -127,39 +130,39 @@ func (a *ApiKeyAuthPage) View() tea.View {
 
 	b.WriteString("API Key Authentication\n\n")
 
-	b.WriteString(fmt.Sprintf("API Address: %s\n", a.addrInput.View()))
-	b.WriteString(fmt.Sprintf("API Key: %s\n\n", a.keyInput.View()))
+	fmt.Fprintf(&b, "API Address: %s\n", a.addrInput.View())
+	fmt.Fprintf(&b, "API Key: %s\n\n", a.keyInput.View())
 
-	connectLabel := "Connect" // TODO add spinner during connection
+	connectButtonStyle := styles.ButtonStyle
 	if a.connected.Load() {
-		connectLabel = styles.DisabledText.Render(connectLabel)
+		connectButtonStyle = styles.ButtonDisabledStyle
 	}
-	if a.focusedIndex == 2 {
-		connectLabel = "[" + connectLabel + "]"
+	if a.focusedIndex == connectButtFocusIndex {
+		connectButtonStyle = styles.SelectedButton(connectButtonStyle)
 	}
-	b.WriteString(fmt.Sprintf("%s\n", connectLabel))
+	fmt.Fprintf(&b, "%s\n\n", connectButtonStyle.Render("Connect"))
 
-	prevLabel := "Prev"
-	if a.focusedIndex == 4 {
-		prevLabel = "[" + prevLabel + "]"
+	prevStyle := styles.ButtonStyle
+	if a.focusedIndex == prevButtonFocusIndex {
+		prevStyle = styles.SelectedButton(prevStyle)
 	}
-	b.WriteString(fmt.Sprintf("%s", prevLabel))
+	fmt.Fprintf(&b, "%s", prevStyle.Render("Prev"))
 
 	b.WriteRune(' ')
 
-	nextLabel := "Next"
+	nextStyle := styles.ButtonStyle
 	if !a.CanProceed() {
-		nextLabel = styles.DisabledText.Render(nextLabel)
+		nextStyle = styles.ButtonDisabledStyle
 	}
-	if a.focusedIndex == 3 {
-		nextLabel = "[" + nextLabel + "]"
+	if a.focusedIndex == nextButtonFocusIndex {
+		nextStyle = styles.SelectedButton(nextStyle)
 	}
-	b.WriteString(fmt.Sprintf("%s", nextLabel))
+	fmt.Fprintf(&b, "%s", nextStyle.Render("Next"))
 
 	b.WriteString("\n\n")
 
 	if a.errorMsg != "" {
-		b.WriteString(authErrStyle.Render("❌ Error: "+a.errorMsg) + "\n")
+		b.WriteString(styles.ErrText.Render("❌ Error: "+a.errorMsg) + "\n")
 	}
 
 	if a.connected.Load() {
@@ -189,9 +192,9 @@ func (a *ApiKeyAuthPage) handleNavigation(key string) {
 	a.keyInput.Blur()
 
 	switch a.focusedIndex {
-	case 0:
+	case addrInputFocusIndex:
 		a.addrInput.Focus()
-	case 1:
+	case keyInputFocusIndex:
 		a.keyInput.Focus()
 	}
 }
