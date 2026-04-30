@@ -13,11 +13,12 @@ import (
 )
 
 type CreateObjectRequest struct {
-	Name       string        `json:"name"`
-	Icon       *anytype.Icon `json:"icon,omitempty"`
-	Body       string        `json:"body"`
-	TemplateId string        `json:"template_id"`
-	TypeKey    string        `json:"type_key"`
+	Name       string                          `json:"name"`
+	Icon       *anytype.Icon                   `json:"icon,omitempty"`
+	Body       string                          `json:"body"`
+	TemplateId string                          `json:"template_id"`
+	TypeKey    string                          `json:"type_key"`
+	Properties []anytype.PropertyLinkWithValue `json:"properties,omitempty"`
 }
 
 type CreatedObjectResponse struct {
