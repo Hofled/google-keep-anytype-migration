@@ -6,7 +6,7 @@ import (
 	"github.com/Hofled/go-google-keep-anytype-migration/pkg/googlekeep"
 )
 
-func AnnotationToBookmark(annotation googlekeep.Annotations) rest.CreateObjectRequest {
+func CreateBookmarkRequest(annotation googlekeep.Annotations) rest.CreateObjectRequest {
 	return rest.CreateObjectRequest{
 		TypeKey: "bookmark",
 		Name:    annotation.Title,
