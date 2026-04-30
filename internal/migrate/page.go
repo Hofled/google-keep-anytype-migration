@@ -19,6 +19,10 @@ func GoogleNoteToCreatePageRequest(note googlekeep.Note) rest.CreateObjectReques
 
 	if len(note.ListContent) > 0 {
 		bodyBuilder.WriteString(listContentToPageBody(note.ListContent))
+		bodyBuilder.WriteString("\n---\n")
+		for _, a := range note.Annotations {
+			fmt.Fprintf(&bodyBuilder, "[%s](%s)\n", a.Title, a.Url)
+		}
 	} else if len(note.TextContent) > 0 {
 		bodyBuilder.WriteString(note.TextContent)
 	}
