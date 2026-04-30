@@ -11,11 +11,11 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype/rest"
-	"github.com/Hofled/go-google-keep-anytype-migration/internal/googlekeep"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/migrate"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
+	"github.com/Hofled/go-google-keep-anytype-migration/pkg/googlekeep"
 )
 
 var (
