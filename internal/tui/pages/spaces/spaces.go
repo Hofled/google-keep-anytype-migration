@@ -2,6 +2,7 @@ package spaces
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype/rest"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
+	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/widgets/list"
 )
 
@@ -84,6 +86,8 @@ type SpacesPageModel struct {
 	keyMap *spacesListKeyMap
 
 	spacesList *list.MultiSelectModel
+
+	err error
 }
 
 func NewSpacesModel(authState state.AppAuthStater, pageState state.AppPageStater, windowState state.AppWindowStater, importSpacesState state.ImportSpacesStater) (*SpacesPageModel, error) {
@@ -111,16 +115,20 @@ type spacesListMsg struct {
 	list []*rest.Space
 }
 
+type loadSpacesListErrMsg struct {
+	err error
+}
+
 func (sm *SpacesPageModel) Init() tea.Cmd {
 	return func() tea.Msg {
 		client := sm.authState.GetClient()
 		if client == nil {
-			return nil
+			return loadSpacesListErrMsg{errors.New("auth client is nil")}
 		}
 
 		spacesList, err := client.ListSpaces(context.Background())
 		if err != nil {
-			return nil
+			return loadSpacesListErrMsg{err}
 		}
 
 		return spacesListMsg{spacesList.Data}
@@ -128,13 +136,20 @@ func (sm *SpacesPageModel) Init() tea.Cmd {
 }
 
 func (sm *SpacesPageModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if msg, ok := msg.(spacesListMsg); ok {
+	switch msg := msg.(type) {
+	case spacesListMsg:
 		newSpacesList, err := constructSpacesList(msg, sm.windowState.GetWindowWidth(), sm.windowState.GetWindowHeight(), sm.keyMap)
 		if err != nil {
+			sm.err = err
+
 			return sm, nil
 		}
 
 		sm.spacesList = newSpacesList
+		return sm, nil
+	case loadSpacesListErrMsg:
+		sm.err = msg.err
+
 		return sm, nil
 	}
 
@@ -216,6 +231,10 @@ const loadingSpacesText = "Loading spaces..."
 
 func (sm *SpacesPageModel) View() tea.View {
 	var b strings.Builder
+
+	if sm.err != nil {
+		return tea.NewView(styles.ErrText.Render(sm.err.Error()))
+	}
 
 	if sm.spacesList == nil {
 		b.WriteString(loadingSpacesText)
