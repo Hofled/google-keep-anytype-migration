@@ -79,12 +79,15 @@ func NewChallengeAuthPage(appAuthStater state.AppAuthStater, appPageState state.
 		return nil, err
 	}
 
+	initChallenge := NewInitModel()
+	initChallenge.SetFocus(true)
+
 	p := &ChallengeAuthPage{
 		PageIds:        pageIds,
 		appAuthState:   appAuthStater,
 		appPageState:   appPageState,
 		currentSubView: initView,
-		initChallenge:  NewInitModel(),
+		initChallenge:  initChallenge,
 		challengeCode:  NewCodeModel(),
 		focusIndex:     0,
 		subViewFocused: true,
@@ -104,6 +107,18 @@ func (cap *ChallengeAuthPage) Init() tea.Cmd {
 func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
+	if !cap.subViewFocused {
+		cap.initChallenge.SetFocus(false)
+		cap.challengeCode.SetFocus(false)
+	} else {
+		switch cap.currentSubView {
+		case initView:
+			cap.initChallenge.SetFocus(true)
+		case codeView:
+			cap.challengeCode.SetFocus(true)
+		}
+	}
+
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		pressedKey := msg.String()
@@ -114,9 +129,6 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cap.handleViewFocus(pressedKey)
 
 		if !cap.subViewFocused {
-			cap.initChallenge.SetFocus(false)
-			cap.challengeCode.SetFocus(false)
-
 			cap.handleNavigation(pressedKey)
 			if pressedKey == "enter" {
 				switch cap.focusIndex {
@@ -138,17 +150,11 @@ func (cap *ChallengeAuthPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			return cap, nil
-		} else {
-			switch cap.currentSubView {
-			case initView:
-				cap.initChallenge.SetFocus(true)
-			case codeView:
-				cap.challengeCode.SetFocus(true)
-			}
 		}
 	case ChallengeIdMsg:
 		cap.appAuthState.SetAPIAddress(msg.Address)
 		cap.currentSubView = codeView
+		cap.challengeCode.SetFocus(true)
 		var m tea.Model
 		m, cmd = cap.challengeCode.Update(msg)
 		cap.challengeCode = m.(*CodeModel)
@@ -177,6 +183,18 @@ func (cap *ChallengeAuthPage) handleViewFocus(key string) {
 	switch key {
 	case "tab", "shift+tab":
 		cap.subViewFocused = !cap.subViewFocused
+	}
+
+	if !cap.subViewFocused {
+		cap.initChallenge.SetFocus(false)
+		cap.challengeCode.SetFocus(false)
+	} else {
+		switch cap.currentSubView {
+		case initView:
+			cap.initChallenge.SetFocus(true)
+		case codeView:
+			cap.challengeCode.SetFocus(true)
+		}
 	}
 }
 
