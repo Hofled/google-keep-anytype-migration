@@ -11,10 +11,10 @@ var (
 
 	baseButtonStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFF7DB")).Padding(0, 3)
 
-	ButtonUnselectableStyle = baseButtonStyle.Background(buttonUnselectableBackground)
+	ButtonGrayedOutStyle = baseButtonStyle.Background(buttonUnselectableBackground)
 
 	ButtonStyle         = baseButtonStyle.Background(buttonBackground)
-	ButtonDisabledStyle = ButtonUnselectableStyle.Strikethrough(true)
+	ButtonDisabledStyle = ButtonGrayedOutStyle.Strikethrough(true)
 )
 
 func SelectedButton(buttonStyle lipgloss.Style) lipgloss.Style {
