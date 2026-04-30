@@ -2,7 +2,6 @@ package anytype
 
 type PropertyLinkWithValue struct {
 	Key         string   `json:"key"`
-	ID          string   `json:"id"`
 	Text        string   `json:"text,omitempty"`
 	Number      float64  `json:"number,omitempty"`
 	Checkbox    bool     `json:"checkbox,omitempty"`
