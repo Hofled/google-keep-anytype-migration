@@ -12,10 +12,10 @@ import (
 	"charm.land/bubbles/v2/filepicker"
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
-	"github.com/Hofled/go-google-keep-anytype-migration/internal/googlekeep"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
+	"github.com/Hofled/go-google-keep-anytype-migration/pkg/googlekeep"
 )
 
 type parsedNotesMsg struct {

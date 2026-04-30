@@ -10,7 +10,7 @@ import (
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype/rest"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
-	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/widgets"
+	"github.com/Hofled/go-google-keep-anytype-migration/pkg/tui/widgets"
 )
 
 const (

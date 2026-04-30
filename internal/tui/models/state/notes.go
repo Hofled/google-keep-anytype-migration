@@ -1,6 +1,6 @@
 package state
 
-import "github.com/Hofled/go-google-keep-anytype-migration/internal/googlekeep"
+import "github.com/Hofled/go-google-keep-anytype-migration/pkg/googlekeep"
 
 type NotesStater interface {
 	ParsedNotes() []googlekeep.Note

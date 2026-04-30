@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/anytype/rest"
-	"github.com/Hofled/go-google-keep-anytype-migration/internal/googlekeep"
+	"github.com/Hofled/go-google-keep-anytype-migration/pkg/googlekeep"
 )
 
 func GoogleNoteToCreatePageRequest(note googlekeep.Note) rest.CreateObjectRequest {

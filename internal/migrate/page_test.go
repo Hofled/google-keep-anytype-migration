@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Hofled/go-google-keep-anytype-migration/internal/googlekeep"
+	"github.com/Hofled/go-google-keep-anytype-migration/pkg/googlekeep"
 	"github.com/stretchr/testify/require"
 )
 

@@ -13,7 +13,7 @@ import (
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/models/state"
 	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/styles"
-	"github.com/Hofled/go-google-keep-anytype-migration/internal/tui/widgets/list"
+	"github.com/Hofled/go-google-keep-anytype-migration/pkg/tui/widgets/list"
 )
 
 type spacesListKeyMap struct {
