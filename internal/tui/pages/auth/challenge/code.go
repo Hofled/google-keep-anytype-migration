@@ -28,6 +28,8 @@ type CodeModel struct {
 
 	challengeId string
 	address     string
+
+	done bool
 }
 
 type ApiKeyMsg struct {
@@ -84,13 +86,16 @@ func (cm *CodeModel) View() tea.View {
 
 	fmt.Fprintf(&b, "Challenge Code: %s\n\n", cm.codeInput.View())
 
-	connectButtonStyle := styles.ButtonUnselectableStyle
-	if cm.Focused() {
+	connectButtonStyle := styles.ButtonGrayedOutStyle
+	if cm.done {
+		connectButtonStyle = styles.ButtonDisabledStyle
+	} else if cm.Focused() {
 		connectButtonStyle = styles.ButtonStyle
 		if cm.focusIndex == connectButtFocusIndex {
 			connectButtonStyle = styles.SelectedButton(connectButtonStyle)
 		}
 	}
+
 	fmt.Fprintf(&b, "%s\n", connectButtonStyle.Render("Connect"))
 
 	return tea.NewView(b.String())
@@ -124,6 +129,8 @@ func (cm *CodeModel) createApiKey() tea.Cmd {
 			// TODO reflect error in component
 			return nil
 		}
+
+		cm.done = true
 
 		return ApiKeyMsg{
 			ApiKey: apiKeyRes.ApiKey,

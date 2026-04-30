@@ -83,7 +83,7 @@ func (im *InitModel) View() tea.View {
 
 	b.WriteString("\n")
 
-	challengeButtonStyle := styles.ButtonUnselectableStyle
+	challengeButtonStyle := styles.ButtonGrayedOutStyle
 	if im.Focused() {
 		challengeButtonStyle = styles.ButtonStyle
 
